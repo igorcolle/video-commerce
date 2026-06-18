@@ -2,16 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSessionId } from "@/lib/session";
+import { onlyDigits } from "@/lib/mask";
 import type {
   Journey,
   Step,
   Option,
   Product,
   StepProduct,
+  StepField,
   EventType,
 } from "@/lib/supabase";
 import VideoStep from "./VideoStep";
+import CollectStep from "./CollectStep";
 import ResultStep from "./ResultStep";
+
+// Dados de contato coletados num formulário de "coleta de dados".
+type Contact = { name?: string; email?: string; whatsapp?: string };
 
 // =====================================================================
 // Player — o coração da experiência.
@@ -25,6 +31,7 @@ type Props = {
   options: Option[];
   products: Product[];
   stepProducts: StepProduct[];
+  stepFields: StepField[];
   // Quando true, mostra o botão de fechar (X) que recolhe o widget no site host.
   embed?: boolean;
 };
@@ -35,6 +42,7 @@ export default function Player({
   options,
   products,
   stepProducts,
+  stepFields,
   embed = false,
 }: Props) {
   const [currentStepId, setCurrentStepId] = useState<string | null>(
@@ -42,11 +50,16 @@ export default function Player({
   );
   // Respostas acumuladas: { "Uso": "Chácara", "Área": "..." }
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // Dados de contato coletados em etapas de "coleta de dados".
+  const [contact, setContact] = useState<Contact>({});
   // Pilha de etapas visitadas (para o botão "voltar" do player).
   const [history, setHistory] = useState<string[]>([]);
   // Id da etapa cujo vídeo já bufferizou: só então pré-carregamos os próximos
   // (para não roubar banda do vídeo que está tocando e causar travadas).
   const [readyStepId, setReadyStepId] = useState<string | null>(null);
+  // Áudio persistente: ativado pelo visitante uma vez, vale para todos os
+  // vídeos seguintes da jornada.
+  const [audioOn, setAudioOn] = useState(false);
 
   const sessionRef = useRef<string>("");
   const completedRef = useRef(false); // evita registrar "complete" duas vezes
@@ -81,19 +94,37 @@ export default function Player({
       .filter((n): n is string => Boolean(n));
   }
 
-  // Cria o lead (chamado ao chegar no resultado).
-  function createLead(resultStepId: string) {
+  // Grava/atualiza o lead (1 por sessão — a API faz upsert por session_id).
+  // É chamado tanto ao enviar um formulário de coleta quanto ao chegar no
+  // resultado, sempre com o estado mais completo de respostas/contato.
+  function saveLead(opts: {
+    answers: Record<string, string>;
+    contact: Contact;
+    recommended_products?: string[];
+  }) {
     fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         journey_id: journey.id,
         session_id: sessionRef.current || getSessionId(),
-        answers,
-        recommended_products: recommendedNames(resultStepId),
+        answers: opts.answers,
+        recommended_products: opts.recommended_products ?? [],
+        name: opts.contact.name ?? null,
+        email: opts.contact.email ?? null,
+        whatsapp: opts.contact.whatsapp ?? null,
       }),
       keepalive: true,
     }).catch(() => {});
+  }
+
+  // Cria o lead ao chegar no resultado (com os produtos recomendados).
+  function createLead(resultStepId: string) {
+    saveLead({
+      answers,
+      contact,
+      recommended_products: recommendedNames(resultStepId),
+    });
   }
 
   // Ao montar: gera o session_id e registra o início.
@@ -137,6 +168,30 @@ export default function Player({
     setCurrentStepId(opt.next_step_id);
   }
 
+  // Envio do formulário de uma etapa de "coleta de dados".
+  function handleCollect(
+    step: Step,
+    fields: StepField[],
+    values: Record<string, string>
+  ) {
+    const nextAnswers = { ...answers };
+    const nextContact: Contact = { ...contact };
+    for (const f of fields) {
+      const v = (values[f.id] ?? "").trim();
+      if (!v) continue;
+      nextAnswers[f.label] = v;
+      if (f.kind === "full_name") nextContact.name = v;
+      else if (f.kind === "email") nextContact.email = v;
+      else if (f.kind === "whatsapp") nextContact.whatsapp = onlyDigits(v);
+    }
+    setAnswers(nextAnswers);
+    setContact(nextContact);
+    // Salva o lead já no envio (não espera o final da jornada).
+    saveLead({ answers: nextAnswers, contact: nextContact });
+    setHistory((h) => [...h, step.id]);
+    setCurrentStepId(step.next_step_id ?? null);
+  }
+
   // Voltar ao vídeo anterior e refazer a pergunta anterior.
   function goBack() {
     const prev = history[history.length - 1];
@@ -162,6 +217,25 @@ export default function Player({
       <main className="flex flex-1 items-center justify-center p-8 text-center text-gray-600">
         Jornada concluída. Obrigado!
       </main>
+    );
+  }
+
+  if (currentStep.type === "collect") {
+    const fields = stepFields
+      .filter((f) => f.step_id === currentStep.id)
+      .sort((a, b) => a.position - b.position);
+    return (
+      <CollectStep
+        key={currentStep.id}
+        step={currentStep}
+        fields={fields}
+        onSubmit={(values) => handleCollect(currentStep, fields, values)}
+        onClose={handleClose}
+        onBack={history.length ? goBack : undefined}
+        onReady={() => setReadyStepId(currentStep.id)}
+        audioOn={audioOn}
+        onAudioChange={setAudioOn}
+      />
     );
   }
 
@@ -227,6 +301,8 @@ export default function Player({
         onClose={handleClose}
         onBack={history.length ? goBack : undefined}
         onReady={() => setReadyStepId(currentStep.id)}
+        audioOn={audioOn}
+        onAudioChange={setAudioOn}
       />
 
       {/* Pré-carregamento dos próximos vídeos. Fica fora da tela (e não

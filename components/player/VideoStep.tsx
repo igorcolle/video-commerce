@@ -36,6 +36,9 @@ type Props = {
   onBack?: () => void;
   // Avisa quando o vídeo atual já está pronto (buffer suficiente).
   onReady?: () => void;
+  // Áudio persistente entre etapas.
+  audioOn?: boolean;
+  onAudioChange?: (on: boolean) => void;
 };
 
 export default function VideoStep({
@@ -45,6 +48,8 @@ export default function VideoStep({
   onClose,
   onBack,
   onReady,
+  audioOn,
+  onAudioChange,
 }: Props) {
   const s = resolveButtonStyle(step);
   const visual = optionButtonVisual(step);
@@ -58,7 +63,13 @@ export default function VideoStep({
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center p-4 sm:p-8">
-      <StoryVideo src={step.video_url ?? ""} onClose={onClose} onReady={onReady}>
+      <StoryVideo
+        src={step.video_url ?? ""}
+        onClose={onClose}
+        onReady={onReady}
+        audioOn={audioOn}
+        onAudioChange={onAudioChange}
+      >
         {({ remaining, ended }) => {
           // Botões disponíveis: sempre (se revelação desligada) ou quando faltar
           // X segundos / terminar / o cliente tocar na setinha.

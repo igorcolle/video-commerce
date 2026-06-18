@@ -45,7 +45,10 @@ export function createServerSupabase() {
 // Tipos mínimos das tabelas usadas nesta fase (espelham supabase_schema.sql).
 // =====================================================================
 
-export type StepType = "question" | "result";
+export type StepType = "question" | "result" | "collect";
+
+// Tipos de campo do formulário de uma etapa de "coleta de dados".
+export type FieldKind = "full_name" | "email" | "whatsapp" | "custom";
 
 // Aparência dos botões de decisão (escolhida no admin, por etapa).
 export type ButtonLayout = "stack" | "grid";
@@ -84,6 +87,8 @@ export type Step = {
   question_text: string | null;
   video_url: string | null;
   position: number;
+  // Próxima etapa das etapas lineares (coleta de dados) — ver supabase_collect_step.sql.
+  next_step_id?: string | null;
   // Posição do bloco no flow builder (preenchido ao arrastar; pode ser null).
   pos_x?: number | null;
   pos_y?: number | null;
@@ -115,6 +120,16 @@ export type Option = {
   subtitle?: string | null; // texto secundário
   icon?: string | null;     // emoji opcional
   next_step_id: string | null;
+  position: number;
+};
+
+// Campo do formulário de uma etapa de "coleta de dados" (ver step_fields).
+export type StepField = {
+  id: string;
+  step_id: string;
+  kind: FieldKind;
+  label: string;      // rótulo do campo (na "custom" é a própria pergunta)
+  required: boolean;
   position: number;
 };
 

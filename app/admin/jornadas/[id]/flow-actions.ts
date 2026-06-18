@@ -4,6 +4,8 @@ import { createServerAuthClient } from "@/lib/supabase-server";
 import type {
   Step,
   Option,
+  StepField,
+  FieldKind,
   StepType,
   ButtonLayout,
   ButtonTemplate,
@@ -38,6 +40,15 @@ const STYLE_COLS = [
 const STEP_COLS =
   "id, journey_id, type, title, question_text, video_url, position, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size";
 const OPTION_COLS = "id, step_id, label, subtitle, icon, next_step_id, position";
+const FIELD_COLS = "id, step_id, kind, label, required, position";
+
+// Rótulo padrão de cada tipo de campo de coleta.
+const FIELD_DEFAULT_LABEL: Record<FieldKind, string> = {
+  full_name: "Nome completo",
+  email: "E-mail",
+  whatsapp: "WhatsApp",
+  custom: "Pergunta personalizada",
+};
 
 // =====================================================================
 // Server actions do FLOW BUILDER.
@@ -48,7 +59,7 @@ const OPTION_COLS = "id, step_id, label, subtitle, icon, next_step_id, position"
 
 async function nextPosition(
   supabase: Awaited<ReturnType<typeof createServerAuthClient>>,
-  table: "steps" | "options",
+  table: "steps" | "options" | "step_fields",
   column: "journey_id" | "step_id",
   value: string
 ): Promise<number> {
@@ -120,6 +131,20 @@ export async function setStepVideoQuiet(stepId: string, videoUrl: string) {
     .update({ video_url: videoUrl })
     .eq("id", stepId);
   if (error) throw new Error("Erro ao salvar vídeo: " + error.message);
+}
+
+// Liga (ou desliga, com null) uma etapa LINEAR (coleta de dados) à próxima.
+// A etapa de coleta não tem botões; ela avança para UMA única etapa.
+export async function setStepNextQuiet(
+  stepId: string,
+  nextStepId: string | null
+) {
+  const supabase = await createServerAuthClient();
+  const { error } = await supabase
+    .from("steps")
+    .update({ next_step_id: nextStepId })
+    .eq("id", stepId);
+  if (error) throw new Error("Erro ao conectar etapa: " + error.message);
 }
 
 // Define a etapa inicial da jornada (sem recarregar o canvas).
@@ -214,6 +239,65 @@ export async function setOptionTarget(
     .update({ next_step_id: nextStepId })
     .eq("id", optionId);
   if (error) throw new Error("Erro ao conectar botão: " + error.message);
+}
+
+// ------------------------------------------------- CAMPOS (COLETA DE DADOS)
+
+export async function addFieldReturning(
+  stepId: string,
+  kind: FieldKind
+): Promise<StepField> {
+  const supabase = await createServerAuthClient();
+  const position = await nextPosition(supabase, "step_fields", "step_id", stepId);
+
+  const { data, error } = await supabase
+    .from("step_fields")
+    .insert({
+      step_id: stepId,
+      kind,
+      label: FIELD_DEFAULT_LABEL[kind],
+      required: true,
+      position,
+    })
+    .select(FIELD_COLS)
+    .single<StepField>();
+
+  if (error || !data) throw new Error("Erro ao adicionar campo: " + error?.message);
+  return data;
+}
+
+export async function updateFieldQuiet(
+  fieldId: string,
+  fields: { kind?: FieldKind; label?: string; required?: boolean }
+) {
+  const supabase = await createServerAuthClient();
+  const { error } = await supabase
+    .from("step_fields")
+    .update(fields)
+    .eq("id", fieldId);
+  if (error) throw new Error("Erro ao salvar campo: " + error.message);
+}
+
+export async function deleteFieldQuiet(fieldId: string) {
+  const supabase = await createServerAuthClient();
+  const { error } = await supabase.from("step_fields").delete().eq("id", fieldId);
+  if (error) throw new Error("Erro ao excluir campo: " + error.message);
+}
+
+// Reordena: grava a nova posição de dois campos que trocaram de lugar.
+export async function reorderFieldsQuiet(
+  a: { id: string; position: number },
+  b: { id: string; position: number }
+) {
+  const supabase = await createServerAuthClient();
+  const [r1, r2] = await Promise.all([
+    supabase.from("step_fields").update({ position: a.position }).eq("id", a.id),
+    supabase.from("step_fields").update({ position: b.position }).eq("id", b.id),
+  ]);
+  if (r1.error || r2.error)
+    throw new Error(
+      "Erro ao reordenar campos: " + (r1.error?.message ?? r2.error?.message)
+    );
 }
 
 // ---------------------------------------------------------------- PRODUTOS

@@ -27,6 +27,7 @@ export default async function EmbedPage({
       options={data.options}
       products={data.products}
       stepProducts={data.stepProducts}
+      stepFields={data.stepFields}
       embed
     />
   );

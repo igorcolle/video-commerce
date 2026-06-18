@@ -9,9 +9,12 @@ import { createServerSupabase } from "@/lib/supabase";
 //
 // Corpo esperado (JSON):
 //   { journey_id, session_id, answers, recommended_products,
-//     cta_clicked?, name?, whatsapp? }
+//     cta_clicked?, name?, email?, whatsapp? }
 //
-// LGPD: name/whatsapp são dados pessoais — só guardamos se vierem
+// Faz UPSERT por (journey_id, session_id): há 1 lead por visita, atualizado
+// ao longo da jornada (ex.: form de coleta no meio + resultado no fim).
+//
+// LGPD: name/email/whatsapp são dados pessoais — só guardamos se vierem
 // preenchidos e tratamos com cuidado.
 // =====================================================================
 
@@ -25,6 +28,7 @@ export async function POST(request: Request) {
       recommended_products,
       cta_clicked,
       name,
+      email,
       whatsapp,
     } = body ?? {};
 
@@ -53,16 +57,20 @@ export async function POST(request: Request) {
 
     const { data, error } = await supabase
       .from("leads")
-      .insert({
-        journey_id,
-        company_id: journey.company_id,
-        session_id,
-        answers: answers ?? {},
-        recommended_products: recommended_products ?? [],
-        cta_clicked: cta_clicked ?? null,
-        name: name ?? null,
-        whatsapp: whatsapp ?? null,
-      })
+      .upsert(
+        {
+          journey_id,
+          company_id: journey.company_id,
+          session_id,
+          answers: answers ?? {},
+          recommended_products: recommended_products ?? [],
+          cta_clicked: cta_clicked ?? null,
+          name: name ?? null,
+          email: email ?? null,
+          whatsapp: whatsapp ?? null,
+        },
+        { onConflict: "journey_id,session_id" }
+      )
       .select("id")
       .single();
 

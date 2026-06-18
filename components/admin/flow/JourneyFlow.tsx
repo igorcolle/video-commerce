@@ -24,6 +24,8 @@ import type {
   Option,
   Product,
   StepProduct,
+  StepField,
+  FieldKind,
   StepType,
   ButtonLayout,
   ButtonTemplate,
@@ -61,12 +63,14 @@ type Props = {
   options: Option[];
   products: Product[];
   stepProducts: StepProduct[];
+  stepFields: StepField[];
 };
 
 // Monta o objeto "node" do React Flow a partir de uma etapa.
 function buildNode(
   step: Step,
   options: Option[],
+  fields: StepField[],
   isStart: boolean,
   productIds: string[],
   fallbackIndex: number
@@ -81,6 +85,7 @@ function buildNode(
     data: {
       step,
       options,
+      fields,
       isStart,
       productIds,
       productCount: productIds.length,
@@ -94,6 +99,7 @@ export default function JourneyFlow({
   options,
   products,
   stepProducts,
+  stepFields,
 }: Props) {
   const nodeTypes = useMemo(() => ({ step: StepNode }), []);
 
@@ -104,6 +110,9 @@ export default function JourneyFlow({
         buildNode(
           s,
           options.filter((o) => o.step_id === s.id),
+          stepFields
+            .filter((f) => f.step_id === s.id)
+            .sort((a, b) => a.position - b.position),
           journey.start_step_id === s.id,
           stepProducts
             .filter((sp) => sp.step_id === s.id)
@@ -117,8 +126,9 @@ export default function JourneyFlow({
   );
 
   const initialEdges = useMemo<Edge[]>(
-    () =>
-      options
+    () => [
+      // Arestas dos botões (ramificação das perguntas).
+      ...options
         .filter((o) => o.next_step_id)
         .map((o) => ({
           id: o.id,
@@ -127,6 +137,17 @@ export default function JourneyFlow({
           target: o.next_step_id as string,
           markerEnd: { type: MarkerType.ArrowClosed },
         })),
+      // Arestas das etapas de coleta (avanço linear via steps.next_step_id).
+      ...steps
+        .filter((s) => s.type === "collect" && s.next_step_id)
+        .map((s) => ({
+          id: `next-${s.id}`,
+          source: s.id,
+          sourceHandle: `next-${s.id}`,
+          target: s.next_step_id as string,
+          markerEnd: { type: MarkerType.ArrowClosed },
+        })),
+    ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
@@ -168,20 +189,29 @@ export default function JourneyFlow({
     (params: Connection) => {
       if (!params.sourceHandle || !params.target) return;
       if (params.source === params.target) return; // evita ligar a si mesma
-      const optionId = params.sourceHandle;
+      const handleId = params.sourceHandle;
+      const isCollectNext = handleId.startsWith("next-");
       setEdges((eds) =>
         addEdge(
-          { ...params, id: optionId, markerEnd: { type: MarkerType.ArrowClosed } },
-          eds.filter((e) => e.id !== optionId) // 1 botão = 1 destino
+          { ...params, id: handleId, markerEnd: { type: MarkerType.ArrowClosed } },
+          eds.filter((e) => e.id !== handleId) // 1 saída = 1 destino
         )
       );
-      flow.setOptionTarget(optionId, params.target);
+      // Coleta de dados liga a etapa inteira; botão de pergunta liga a opção.
+      if (isCollectNext) {
+        flow.setStepNextQuiet(params.source as string, params.target);
+      } else {
+        flow.setOptionTarget(handleId, params.target);
+      }
     },
     [setEdges]
   );
 
   const onEdgesDelete = useCallback((deleted: Edge[]) => {
-    deleted.forEach((e) => flow.setOptionTarget(e.id, null));
+    deleted.forEach((e) => {
+      if (e.id.startsWith("next-")) flow.setStepNextQuiet(e.source, null);
+      else flow.setOptionTarget(e.id, null);
+    });
   }, []);
 
   const onNodeDragStop = useCallback(
@@ -196,7 +226,7 @@ export default function JourneyFlow({
     async (type: StepType) => {
       const pos = { x: 120 + nodes.length * 30, y: 120 + nodes.length * 30 };
       const step = await flow.addStepReturning(journey.id, type, pos.x, pos.y);
-      setNodes((nds) => [...nds, buildNode(step, [], false, [], nds.length)]);
+      setNodes((nds) => [...nds, buildNode(step, [], [], false, [], nds.length)]);
     },
     [journey.id, nodes.length, setNodes]
   );
@@ -204,15 +234,32 @@ export default function JourneyFlow({
   // ---- Handlers do Inspector ----
   const onType = useCallback(
     async (id: string, t: StepType) => {
-      if (t === "result") {
-        // Resultado não tem botões: remove os existentes e suas conexões.
-        const node = nodes.find((n) => n.id === id);
+      const node = nodes.find((n) => n.id === id);
+      const prev = node ? dataOf(node).step.type : "question";
+
+      // Resultado e Coleta não têm botões: remove os existentes e suas conexões.
+      if (t !== "question") {
         const opts = node ? dataOf(node).options : [];
-        await Promise.all(opts.map((o) => flow.deleteOptionQuiet(o.id)));
-        const optIds = new Set(opts.map((o) => o.id));
-        setEdges((eds) => eds.filter((e) => !optIds.has(e.id)));
-        patchData(id, { options: [] });
+        if (opts.length) {
+          await Promise.all(opts.map((o) => flow.deleteOptionQuiet(o.id)));
+          const optIds = new Set(opts.map((o) => o.id));
+          setEdges((eds) => eds.filter((e) => !optIds.has(e.id)));
+          patchData(id, { options: [] });
+        }
       }
+
+      // Saindo de "coleta": remove os campos e o conector de saída.
+      if (prev === "collect" && t !== "collect") {
+        const fields = node ? dataOf(node).fields : [];
+        if (fields.length) {
+          await Promise.all(fields.map((f) => flow.deleteFieldQuiet(f.id)));
+          patchData(id, { fields: [] });
+        }
+        setEdges((eds) => eds.filter((e) => e.id !== `next-${id}`));
+        flow.setStepNextQuiet(id, null);
+        patchStep(id, { next_step_id: null });
+      }
+
       patchStep(id, { type: t });
       flow.updateStepQuiet(id, { type: t });
     },
@@ -292,6 +339,79 @@ export default function JourneyFlow({
     [nodes, patchData, setEdges]
   );
 
+  // ---- Handlers de CAMPOS (etapa de coleta de dados) ----
+  const onAddField = useCallback(
+    async (stepId: string, kind: FieldKind) => {
+      const field = await flow.addFieldReturning(stepId, kind);
+      const node = nodes.find((n) => n.id === stepId);
+      if (node) patchData(stepId, { fields: [...dataOf(node).fields, field] });
+    },
+    [nodes, patchData]
+  );
+
+  const onFieldUpdate = useCallback(
+    (
+      stepId: string,
+      fieldId: string,
+      updates: { kind?: FieldKind; label?: string; required?: boolean }
+    ) => {
+      const node = nodes.find((n) => n.id === stepId);
+      if (node) {
+        patchData(stepId, {
+          fields: dataOf(node).fields.map((f) =>
+            f.id === fieldId ? { ...f, ...updates } : f
+          ),
+        });
+      }
+      flow.updateFieldQuiet(fieldId, updates);
+    },
+    [nodes, patchData]
+  );
+
+  const onDeleteField = useCallback(
+    (stepId: string, fieldId: string) => {
+      flow.deleteFieldQuiet(fieldId);
+      const node = nodes.find((n) => n.id === stepId);
+      if (node) {
+        patchData(stepId, {
+          fields: dataOf(node).fields.filter((f) => f.id !== fieldId),
+        });
+      }
+    },
+    [nodes, patchData]
+  );
+
+  const onReorderField = useCallback(
+    (stepId: string, fieldId: string, direction: "up" | "down") => {
+      const node = nodes.find((n) => n.id === stepId);
+      if (!node) return;
+      const fields = [...dataOf(node).fields].sort(
+        (a, b) => a.position - b.position
+      );
+      const idx = fields.findIndex((f) => f.id === fieldId);
+      const swap = direction === "up" ? idx - 1 : idx + 1;
+      if (idx < 0 || swap < 0 || swap >= fields.length) return;
+      const a = fields[idx];
+      const b = fields[swap];
+      // Troca as posições de A e B.
+      const reordered = fields
+        .map((f) =>
+          f.id === a.id
+            ? { ...f, position: b.position }
+            : f.id === b.id
+            ? { ...f, position: a.position }
+            : f
+        )
+        .sort((x, y) => x.position - y.position);
+      patchData(stepId, { fields: reordered });
+      flow.reorderFieldsQuiet(
+        { id: a.id, position: b.position },
+        { id: b.id, position: a.position }
+      );
+    },
+    [nodes, patchData]
+  );
+
   const onSetProducts = useCallback(
     (stepId: string, ids: string[]) => {
       flow.setStepProductsQuiet(stepId, ids);
@@ -343,6 +463,9 @@ export default function JourneyFlow({
           <Button variant="primary" size="sm" onClick={() => addStep("question")}>
             + Etapa de pergunta
           </Button>
+          <Button variant="secondary" size="sm" onClick={() => addStep("collect")}>
+            + Coleta de dados
+          </Button>
           <Button variant="secondary" size="sm" onClick={() => addStep("result")}>
             + Etapa de resultado
           </Button>
@@ -374,6 +497,7 @@ export default function JourneyFlow({
           journeyId={journey.id}
           step={selData.step}
           options={selData.options}
+          fields={selData.fields}
           productIds={selData.productIds}
           products={products}
           isStart={selData.isStart}
@@ -391,6 +515,14 @@ export default function JourneyFlow({
             onOptionFields(selectedNode.id, optId, fields)
           }
           onDeleteOption={(optId) => onDeleteOption(selectedNode.id, optId)}
+          onAddField={(kind) => onAddField(selectedNode.id, kind)}
+          onFieldUpdate={(fieldId, updates) =>
+            onFieldUpdate(selectedNode.id, fieldId, updates)
+          }
+          onDeleteField={(fieldId) => onDeleteField(selectedNode.id, fieldId)}
+          onReorderField={(fieldId, dir) =>
+            onReorderField(selectedNode.id, fieldId, dir)
+          }
           onStepStyle={(patch) => onStepStyle(selectedNode.id, patch)}
           onReplicateStyle={() => onReplicateStyle(selectedNode.id)}
           onSetProducts={(ids) => onSetProducts(selectedNode.id, ids)}

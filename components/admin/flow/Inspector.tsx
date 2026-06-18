@@ -4,6 +4,8 @@ import { useState } from "react";
 import type {
   Step,
   Option,
+  StepField,
+  FieldKind,
   Product,
   StepType,
   ButtonLayout,
@@ -63,6 +65,7 @@ type Props = {
   journeyId: string;
   step: Step;
   options: Option[];
+  fields: StepField[];
   productIds: string[];
   products: Product[];
   isStart: boolean;
@@ -75,6 +78,13 @@ type Props = {
     fields: { label?: string; subtitle?: string | null; icon?: string | null }
   ) => void;
   onDeleteOption: (optionId: string) => void;
+  onAddField: (kind: FieldKind) => void;
+  onFieldUpdate: (
+    fieldId: string,
+    updates: { kind?: FieldKind; label?: string; required?: boolean }
+  ) => void;
+  onDeleteField: (fieldId: string) => void;
+  onReorderField: (fieldId: string, direction: "up" | "down") => void;
   onStepStyle: (patch: StylePatch) => void;
   onReplicateStyle: () => void;
   onSetProducts: (ids: string[]) => void;
@@ -88,13 +98,15 @@ type Props = {
 type Tab =
   | "pergunta"
   | "botoes"
+  | "campos"
   | "comportamento"
   | "resultado"
   | "produtos";
 
 export default function Inspector(props: Props) {
-  const { step, options, products, productIds, isStart } = props;
+  const { step, options, fields, products, productIds, isStart } = props;
   const isResult = step.type === "result";
+  const isCollect = step.type === "collect";
 
   const [tab, setTab] = useState<Tab>(isResult ? "resultado" : "pergunta");
 
@@ -158,6 +170,11 @@ export default function Inspector(props: Props) {
         { id: "resultado", name: "Conteúdo" },
         { id: "produtos", name: "Produtos" },
       ]
+    : isCollect
+    ? [
+        { id: "pergunta", name: "Pergunta" },
+        { id: "campos", name: "Campos" },
+      ]
     : [
         { id: "pergunta", name: "Pergunta" },
         { id: "botoes", name: "Botões" },
@@ -206,6 +223,7 @@ export default function Inspector(props: Props) {
                 onChange={(e) => props.onType(e.target.value as StepType)}
               >
                 <option value="question">Pergunta</option>
+                <option value="collect">Coleta de dados</option>
                 <option value="result">Resultado</option>
               </Select>
             </Field>
@@ -561,6 +579,48 @@ export default function Inspector(props: Props) {
           </>
         )}
 
+        {/* ---------------- Aba: CAMPOS (etapa de coleta de dados) -------- */}
+        {tab === "campos" && (
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="ds-label">Campos do formulário</span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => props.onAddField("full_name")}
+              >
+                + Campo
+              </Button>
+            </div>
+            <p className="mb-3 text-xs text-[var(--text-subtle)]">
+              O visitante preencherá estes campos. Use as setas para reordenar e
+              marque os obrigatórios.
+            </p>
+
+            {fields.length === 0 ? (
+              <p className="text-sm italic text-[var(--text-subtle)]">
+                Nenhum campo ainda. Clique em “+ Campo”.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {[...fields]
+                  .sort((a, b) => a.position - b.position)
+                  .map((f, i, arr) => (
+                    <FieldRow
+                      key={f.id}
+                      field={f}
+                      isFirst={i === 0}
+                      isLast={i === arr.length - 1}
+                      onUpdate={(updates) => props.onFieldUpdate(f.id, updates)}
+                      onDelete={() => props.onDeleteField(f.id)}
+                      onReorder={(dir) => props.onReorderField(f.id, dir)}
+                    />
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ---------------- Aba: COMPORTAMENTO (etapa de pergunta) -------- */}
         {tab === "comportamento" && (
           <div className="rounded-lg border border-[var(--border)] p-3">
@@ -610,6 +670,7 @@ export default function Inspector(props: Props) {
                 onChange={(e) => props.onType(e.target.value as StepType)}
               >
                 <option value="question">Pergunta</option>
+                <option value="collect">Coleta de dados</option>
                 <option value="result">Resultado</option>
               </Select>
             </Field>
@@ -679,6 +740,104 @@ export default function Inspector(props: Props) {
         </Button>
       </div>
     </aside>
+  );
+}
+
+// Tipos de campo disponíveis na etapa de coleta de dados.
+const FIELD_KINDS: { id: FieldKind; name: string }[] = [
+  { id: "full_name", name: "Nome completo" },
+  { id: "email", name: "E-mail" },
+  { id: "whatsapp", name: "WhatsApp" },
+  { id: "custom", name: "Personalizado" },
+];
+
+// Linha de edição de um campo do formulário de coleta.
+// O rótulo salva ao sair do campo; tipo/obrigatório salvam na hora.
+function FieldRow({
+  field,
+  isFirst,
+  isLast,
+  onUpdate,
+  onDelete,
+  onReorder,
+}: {
+  field: StepField;
+  isFirst: boolean;
+  isLast: boolean;
+  onUpdate: (updates: {
+    kind?: FieldKind;
+    label?: string;
+    required?: boolean;
+  }) => void;
+  onDelete: () => void;
+  onReorder: (direction: "up" | "down") => void;
+}) {
+  const [label, setLabel] = useState(field.label);
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-[var(--border)] p-2.5">
+      <div className="flex items-center gap-1">
+        <div className="flex flex-col">
+          <button
+            type="button"
+            aria-label="Mover para cima"
+            disabled={isFirst}
+            onClick={() => onReorder("up")}
+            className="px-1 text-xs leading-none text-[var(--text-subtle)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            ▲
+          </button>
+          <button
+            type="button"
+            aria-label="Mover para baixo"
+            disabled={isLast}
+            onClick={() => onReorder("down")}
+            className="px-1 text-xs leading-none text-[var(--text-subtle)] hover:text-[var(--text)] disabled:opacity-30"
+          >
+            ▼
+          </button>
+        </div>
+
+        <Select
+          value={field.kind}
+          onChange={(e) => onUpdate({ kind: e.target.value as FieldKind })}
+          className="flex-1"
+        >
+          {FIELD_KINDS.map((k) => (
+            <option key={k.id} value={k.id}>
+              {k.name}
+            </option>
+          ))}
+        </Select>
+
+        <button
+          type="button"
+          aria-label="Excluir campo"
+          onClick={onDelete}
+          className="px-1.5 text-[var(--danger)] hover:opacity-70"
+        >
+          ✕
+        </button>
+      </div>
+
+      <Input
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        onBlur={() => onUpdate({ label })}
+        placeholder={
+          field.kind === "custom" ? "Pergunta ao visitante" : "Rótulo do campo"
+        }
+      />
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={field.required}
+          onChange={(e) => onUpdate({ required: e.target.checked })}
+        />
+        Obrigatório
+      </label>
+    </div>
   );
 }
 

@@ -1,12 +1,14 @@
 "use client";
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { Step, Option } from "@/lib/supabase";
+import type { Step, Option, StepField } from "@/lib/supabase";
 
 // Dados que cada bloco carrega no canvas.
 export type StepNodeData = {
   step: Step;
   options: Option[];
+  // Campos do formulário (só em etapas de "coleta de dados").
+  fields: StepField[];
   isStart: boolean;
   productCount: number;
   // IDs dos produtos vinculados (usado pelo Inspector em etapas de resultado).
@@ -20,13 +22,14 @@ export const NODE_WIDTH = 250;
 // - Etapa de resultado: mostra a contagem de produtos. Só recebe conexão.
 export default function StepNode({ data, selected }: NodeProps) {
   const d = data as unknown as StepNodeData;
-  const { step, options, isStart, productCount } = d;
+  const { step, options, fields, isStart, productCount } = d;
   const isResult = step.type === "result";
+  const isCollect = step.type === "collect";
 
   return (
     <div
       style={{ width: NODE_WIDTH }}
-      className={`rounded-xl border bg-white shadow-sm transition-shadow ${
+      className={`rounded-xl border bg-[var(--bg)] shadow-sm transition-shadow ${
         selected
           ? "border-[var(--accent)] shadow-md ring-2 ring-[var(--accent-soft)]"
           : "border-[var(--border)]"
@@ -44,10 +47,10 @@ export default function StepNode({ data, selected }: NodeProps) {
         <div className="flex items-center gap-1.5">
           <span
             className={`ds-badge ${
-              isResult ? "ds-badge-accent" : "ds-badge-neutral"
+              isResult || isCollect ? "ds-badge-accent" : "ds-badge-neutral"
             }`}
           >
-            {isResult ? "Resultado" : "Pergunta"}
+            {isResult ? "Resultado" : isCollect ? "Coleta" : "Pergunta"}
           </span>
           {isStart && <span className="ds-badge ds-badge-success">Início</span>}
         </div>
@@ -71,7 +74,7 @@ export default function StepNode({ data, selected }: NodeProps) {
       </div>
 
       {/* Opções (só em pergunta) — cada uma tem um conector de saída */}
-      {!isResult && (
+      {!isResult && !isCollect && (
         <div className="flex flex-col border-t border-[var(--border)]">
           {options.length === 0 && (
             <span className="px-3 py-2 text-xs italic text-[var(--text-subtle)]">
@@ -95,6 +98,34 @@ export default function StepNode({ data, selected }: NodeProps) {
               />
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Coleta de dados — lista os campos e tem UM conector de saída único */}
+      {isCollect && (
+        <div className="relative flex flex-col border-t border-[var(--border)]">
+          {fields.length === 0 ? (
+            <span className="px-3 py-2 text-xs italic text-[var(--text-subtle)]">
+              Sem campos ainda
+            </span>
+          ) : (
+            fields.map((f) => (
+              <div
+                key={f.id}
+                className="border-b border-[var(--border)] px-3 py-1.5 text-xs text-[var(--text)] last:border-b-0"
+              >
+                {f.label}
+                {f.required && <span className="text-[var(--danger)]"> *</span>}
+              </div>
+            ))
+          )}
+          {/* Conector de saída da etapa de coleta (avança para a próxima) */}
+          <Handle
+            id={`next-${step.id}`}
+            type="source"
+            position={Position.Right}
+            className="!h-2.5 !w-2.5 !border-2 !border-white !bg-[var(--accent)]"
+          />
         </div>
       )}
 

@@ -7,6 +7,7 @@ import type {
   Option,
   Product,
   StepProduct,
+  StepField,
 } from "@/lib/supabase";
 import JourneyFlow from "@/components/admin/flow/JourneyFlow";
 import WidgetPanel from "@/components/admin/WidgetPanel";
@@ -25,7 +26,9 @@ import {
 
 function stepLabel(s: Step): string {
   const base = s.title || s.question_text || "Etapa";
-  return s.type === "result" ? `${base} (resultado)` : base;
+  if (s.type === "result") return `${base} (resultado)`;
+  if (s.type === "collect") return `${base} (coleta)`;
+  return base;
 }
 
 export default async function EditorPage({
@@ -49,7 +52,7 @@ export default async function EditorPage({
   const { data: steps } = await supabase
     .from("steps")
     .select(
-      "id, journey_id, type, title, question_text, video_url, position, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size"
+      "id, journey_id, type, title, question_text, video_url, position, next_step_id, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size"
     )
     .eq("journey_id", id)
     .order("position")
@@ -76,6 +79,13 @@ export default async function EditorPage({
     .select("step_id, product_id, position")
     .in("step_id", stepIds.length ? stepIds : ["-"])
     .returns<StepProduct[]>();
+
+  const { data: stepFields } = await supabase
+    .from("step_fields")
+    .select("id, step_id, kind, label, required, position")
+    .in("step_id", stepIds.length ? stepIds : ["-"])
+    .order("position")
+    .returns<StepField[]>();
 
   const productList = products ?? [];
   const isPublished = journey.status === "published";
@@ -158,6 +168,7 @@ export default async function EditorPage({
         options={options ?? []}
         products={productList}
         stepProducts={stepProducts ?? []}
+        stepFields={stepFields ?? []}
       />
 
       {/* Configurações da jornada */}

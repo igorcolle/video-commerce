@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // =====================================================================
 // StoryVideo — player no formato stories (vertical 9:16) com controles
@@ -24,6 +24,10 @@ type Props = {
   // Avisa (uma vez) quando o vídeo atual já bufferizou o suficiente para tocar
   // sem travar — usado para só então pré-carregar os próximos vídeos.
   onReady?: () => void;
+  // Estado de áudio "elevado" ao Player: uma vez que o visitante ativa o som,
+  // os próximos vídeos já começam com som.
+  audioOn?: boolean;
+  onAudioChange?: (on: boolean) => void;
   // children pode ser um nó simples ou uma função que recebe o estado de
   // reprodução (tempo restante + se terminou), para o overlay reagir.
   children?: ReactNode | ((s: PlaybackState) => ReactNode);
@@ -37,11 +41,14 @@ export default function StoryVideo({
   onEnded,
   onClose,
   onReady,
+  audioOn = false,
+  onAudioChange,
   children,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readyRef = useRef(false); // garante que onReady dispare só uma vez
-  const [muted, setMuted] = useState(true); // autoplay confiável começa mudo
+  // Se o visitante já ativou o som antes, este vídeo já começa com som.
+  const [muted, setMuted] = useState(!audioOn);
   const [progress, setProgress] = useState(0); // 0–100
   const [remaining, setRemaining] = useState(Infinity); // segundos até o fim
   const [ended, setEnded] = useState(false);
@@ -62,6 +69,7 @@ export default function StoryVideo({
     if (!v) return;
     v.muted = !v.muted;
     setMuted(v.muted);
+    onAudioChange?.(!v.muted); // eleva o estado de áudio ao Player
     if (!v.muted) setShowSoundHint(false); // ativou o som → some o aviso
   }
 
@@ -72,8 +80,22 @@ export default function StoryVideo({
       v.muted = false;
       setMuted(false);
     }
+    onAudioChange?.(true); // eleva o estado de áudio ao Player
     setShowSoundHint(false);
   }
+
+  // Se o visitante já ativou o som em um vídeo anterior, tenta começar este
+  // com som. Se o navegador bloquear o autoplay com áudio, cai para mudo.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !audioOn) return;
+    v.muted = false;
+    v.play().catch(() => {
+      v.muted = true;
+      setMuted(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function cycleSpeed() {
     const next = (speedIdx + 1) % SPEEDS.length;
@@ -116,7 +138,7 @@ export default function StoryVideo({
           key={src}
           src={src}
           autoPlay
-          muted
+          muted={muted}
           playsInline
           preload="auto"
           className="h-full w-full object-cover"
