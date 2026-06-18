@@ -111,6 +111,17 @@ export type Step = {
   question_bg_color?: string | null;
   // Tamanho do texto dos botões de decisão.
   button_text_size?: ButtonTextSize | null;
+  // Botão de ação geral (CTA) da etapa de resultado (configurável no admin).
+  result_cta?: ProductButton | null;
+};
+
+// Botão de ação de um produto (ou CTA geral): WhatsApp ou link personalizado.
+//   whatsapp → value = número com DDI; label = texto do botão.
+//   custom   → label = nome do botão; value = link de destino.
+export type ProductButton = {
+  kind: "whatsapp" | "custom";
+  label: string;
+  value: string;
 };
 
 export type Option = {
@@ -141,6 +152,8 @@ export type Product = {
   benefits: string | null;
   buy_link: string | null;
   whatsapp: string | null;
+  // Até 2 botões de ação configuráveis (WhatsApp / personalizado).
+  buttons: ProductButton[];
 };
 
 export type StepProduct = {

@@ -17,6 +17,9 @@ import {
 } from "@xyflow/react";
 import StepNode, { type StepNodeData } from "./StepNode";
 import Inspector from "./Inspector";
+import StepPreviewModal from "./StepPreviewModal";
+import DeletableEdge from "./DeletableEdge";
+import { StepActionsContext } from "./StepActionsContext";
 import { Button } from "@/components/ui/Button";
 import type {
   Journey,
@@ -34,6 +37,7 @@ import type {
   QuestionPosition,
   QuestionFontSize,
   ButtonTextSize,
+  ProductButton,
 } from "@/lib/supabase";
 
 // Campos de estilo dos botões que podem ser atualizados de uma vez.
@@ -102,6 +106,7 @@ export default function JourneyFlow({
   stepFields,
 }: Props) {
   const nodeTypes = useMemo(() => ({ step: StepNode }), []);
+  const edgeTypes = useMemo(() => ({ deletable: DeletableEdge }), []);
 
   // Estado inicial dos nós e arestas.
   const initialNodes = useMemo<Node[]>(
@@ -132,6 +137,7 @@ export default function JourneyFlow({
         .filter((o) => o.next_step_id)
         .map((o) => ({
           id: o.id,
+          type: "deletable",
           source: o.step_id,
           sourceHandle: o.id,
           target: o.next_step_id as string,
@@ -142,6 +148,7 @@ export default function JourneyFlow({
         .filter((s) => s.type === "collect" && s.next_step_id)
         .map((s) => ({
           id: `next-${s.id}`,
+          type: "deletable",
           source: s.id,
           sourceHandle: `next-${s.id}`,
           target: s.next_step_id as string,
@@ -155,6 +162,8 @@ export default function JourneyFlow({
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Etapa em pré-visualização (modal). null = nenhuma.
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   // ---- Helpers de estado local ----
   const dataOf = (n: Node) => n.data as unknown as StepNodeData;
@@ -193,7 +202,12 @@ export default function JourneyFlow({
       const isCollectNext = handleId.startsWith("next-");
       setEdges((eds) =>
         addEdge(
-          { ...params, id: handleId, markerEnd: { type: MarkerType.ArrowClosed } },
+          {
+            ...params,
+            id: handleId,
+            type: "deletable",
+            markerEnd: { type: MarkerType.ArrowClosed },
+          },
           eds.filter((e) => e.id !== handleId) // 1 saída = 1 destino
         )
       );
@@ -420,6 +434,15 @@ export default function JourneyFlow({
     [patchData]
   );
 
+  // CTA geral da etapa de resultado.
+  const onResultCta = useCallback(
+    (stepId: string, cta: ProductButton | null) => {
+      patchStep(stepId, { result_cta: cta });
+      flow.setResultCtaQuiet(stepId, cta);
+    },
+    [patchStep]
+  );
+
   const onSetStart = useCallback(
     (stepId: string) => {
       flow.setStartStepQuiet(journey.id, stepId);
@@ -451,11 +474,39 @@ export default function JourneyFlow({
     [patchStep]
   );
 
+  // Duplica a etapa selecionada (conteúdo/estilo/botões/campos/produtos, sem
+  // as ligações de saída) e insere o novo nó no canvas, já selecionado.
+  const duplicateStep = useCallback(
+    async (stepId: string) => {
+      const dup = await flow.duplicateStepReturning(stepId);
+      setNodes((nds) => [
+        ...nds,
+        buildNode(
+          dup.step,
+          dup.options,
+          dup.fields,
+          false,
+          dup.productIds,
+          nds.length
+        ),
+      ]);
+      setSelectedId(dup.step.id);
+    },
+    [setNodes]
+  );
+
   // Nó selecionado (para o Inspector).
   const selectedNode = nodes.find((n) => n.id === selectedId);
   const selData = selectedNode ? dataOf(selectedNode) : null;
 
+  // Nó em pré-visualização (para o modal).
+  const previewNode = nodes.find((n) => n.id === previewId);
+  const previewData = previewNode ? dataOf(previewNode) : null;
+
   return (
+    <StepActionsContext.Provider
+      value={{ onDuplicate: duplicateStep, onPreview: setPreviewId }}
+    >
     <div className="flex h-[calc(100vh-12rem)] w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface-2)]">
       <div className="relative flex-1">
         {/* Toolbar */}
@@ -475,6 +526,8 @@ export default function JourneyFlow({
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          deleteKeyCode={["Backspace", "Delete"]}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
@@ -526,12 +579,27 @@ export default function JourneyFlow({
           onStepStyle={(patch) => onStepStyle(selectedNode.id, patch)}
           onReplicateStyle={() => onReplicateStyle(selectedNode.id)}
           onSetProducts={(ids) => onSetProducts(selectedNode.id, ids)}
+          onResultCta={(cta) => onResultCta(selectedNode.id, cta)}
           onSetStart={() => onSetStart(selectedNode.id)}
           onDeleteStep={() => onDeleteStep(selectedNode.id)}
           onVideoUploaded={(url) => onVideoUploaded(selectedNode.id, url)}
           onClose={() => setSelectedId(null)}
         />
       )}
+
+      {/* Modal de pré-visualização de uma etapa isolada. */}
+      {previewNode && previewData && (
+        <StepPreviewModal
+          step={previewData.step}
+          options={previewData.options}
+          fields={previewData.fields}
+          products={previewData.productIds
+            .map((id) => products.find((p) => p.id === id))
+            .filter((p): p is Product => Boolean(p))}
+          onClose={() => setPreviewId(null)}
+        />
+      )}
     </div>
+    </StepActionsContext.Provider>
   );
 }

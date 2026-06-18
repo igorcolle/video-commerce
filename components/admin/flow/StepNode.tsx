@@ -2,6 +2,7 @@
 
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import type { Step, Option, StepField } from "@/lib/supabase";
+import { useStepActions } from "./StepActionsContext";
 
 // Dados que cada bloco carrega no canvas.
 export type StepNodeData = {
@@ -25,6 +26,7 @@ export default function StepNode({ data, selected }: NodeProps) {
   const { step, options, fields, isStart, productCount } = d;
   const isResult = step.type === "result";
   const isCollect = step.type === "collect";
+  const actions = useStepActions();
 
   return (
     <div
@@ -54,11 +56,38 @@ export default function StepNode({ data, selected }: NodeProps) {
           </span>
           {isStart && <span className="ds-badge ds-badge-success">Início</span>}
         </div>
-        {step.video_url ? (
-          <span title="Tem vídeo" className="text-xs">🎬</span>
-        ) : (
-          <span title="Sem vídeo" className="text-xs opacity-40">🎬</span>
-        )}
+        <div className="flex items-center gap-1">
+          {/* Ações rápidas do card (não disparam seleção/arraste do nó). */}
+          <button
+            type="button"
+            className="nodrag flex h-6 w-6 items-center justify-center rounded-md text-[var(--text-subtle)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.onDuplicate(step.id);
+            }}
+            aria-label="Duplicar etapa"
+            title="Duplicar etapa"
+          >
+            <IconDuplicate />
+          </button>
+          <button
+            type="button"
+            className="nodrag flex h-6 w-6 items-center justify-center rounded-md text-[var(--text-subtle)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--text)]"
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.onPreview(step.id);
+            }}
+            aria-label="Pré-visualizar etapa"
+            title="Pré-visualizar etapa"
+          >
+            <IconEye />
+          </button>
+          {step.video_url ? (
+            <span title="Tem vídeo" className="text-xs">🎬</span>
+          ) : (
+            <span title="Sem vídeo" className="text-xs opacity-40">🎬</span>
+          )}
+        </div>
       </div>
 
       {/* Corpo */}
@@ -138,5 +167,25 @@ export default function StepNode({ data, selected }: NodeProps) {
         </div>
       )}
     </div>
+  );
+}
+
+// ----- Ícones do cabeçalho (SVG inline) -----
+
+function IconDuplicate() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function IconEye() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
   );
 }

@@ -16,6 +16,7 @@ import type {
   ButtonTextSize,
   WidgetFormat,
   WidgetPosition,
+  ProductButton,
 } from "@/lib/supabase";
 
 // Colunas de ESTILO copiadas ao "replicar estilo" entre etapas.
@@ -38,7 +39,7 @@ const STYLE_COLS = [
 
 // Colunas selecionadas ao devolver uma etapa/opção (mantém os tipos completos).
 const STEP_COLS =
-  "id, journey_id, type, title, question_text, video_url, position, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size";
+  "id, journey_id, type, title, question_text, video_url, position, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size, result_cta";
 const OPTION_COLS = "id, step_id, label, subtitle, icon, next_step_id, position";
 const FIELD_COLS = "id, step_id, kind, label, required, position";
 
@@ -100,6 +101,141 @@ export async function addStepReturning(
   return data;
 }
 
+// Colunas de conteúdo/estilo copiadas ao DUPLICAR uma etapa (sem id/posição/
+// ligações, que recebem valores novos).
+const STEP_COPY_COLS = [
+  "type",
+  "title",
+  "question_text",
+  "video_url",
+  "buttons_layout",
+  "button_template",
+  "button_color",
+  "button_opacity",
+  "button_font_color",
+  "button_font",
+  "button_border_color",
+  "button_shadow",
+  "buttons_reveal_enabled",
+  "buttons_reveal_seconds",
+  "question_position",
+  "question_font_size",
+  "question_font_color",
+  "question_bg_enabled",
+  "question_bg_color",
+  "button_text_size",
+  "result_cta",
+] as const;
+
+// Duplica uma etapa: copia conteúdo, estilo, botões, campos e produtos
+// vinculados. NÃO copia as ligações de saída (next_step_id) — o admin liga os
+// caminhos manualmente no canvas. Devolve tudo para o canvas inserir sem reload.
+export async function duplicateStepReturning(stepId: string): Promise<{
+  step: Step;
+  options: Option[];
+  fields: StepField[];
+  productIds: string[];
+}> {
+  const supabase = await createServerAuthClient();
+
+  // 1) Lê a etapa origem (conteúdo + estilo).
+  const { data: src, error: srcErr } = await supabase
+    .from("steps")
+    .select("journey_id, pos_x, pos_y, " + STEP_COPY_COLS.join(", "))
+    .eq("id", stepId)
+    .single<Record<string, unknown>>();
+  if (srcErr || !src)
+    throw new Error("Erro ao ler etapa: " + srcErr?.message);
+
+  const journeyId = src.journey_id as string;
+  const position = await nextPosition(supabase, "steps", "journey_id", journeyId);
+
+  // Monta o registro novo só com as colunas copiáveis (sem id/posição/ligação).
+  const insertStep: Record<string, unknown> = { journey_id: journeyId, position };
+  for (const c of STEP_COPY_COLS) insertStep[c] = src[c];
+  insertStep.pos_x = ((src.pos_x as number | null) ?? 80) + 40;
+  insertStep.pos_y = ((src.pos_y as number | null) ?? 80) + 40;
+
+  const { data: newStep, error: insErr } = await supabase
+    .from("steps")
+    .insert(insertStep)
+    .select(STEP_COLS)
+    .single<Step>();
+  if (insErr || !newStep)
+    throw new Error("Erro ao duplicar etapa: " + insErr?.message);
+
+  // 2) Copia os botões (sem next_step_id — sem ligações de saída).
+  const { data: srcOptions } = await supabase
+    .from("options")
+    .select(OPTION_COLS)
+    .eq("step_id", stepId)
+    .order("position")
+    .returns<Option[]>();
+
+  let options: Option[] = [];
+  if (srcOptions && srcOptions.length > 0) {
+    const rows = srcOptions.map((o) => ({
+      step_id: newStep.id,
+      label: o.label,
+      subtitle: o.subtitle,
+      icon: o.icon,
+      position: o.position,
+    }));
+    const { data: ins } = await supabase
+      .from("options")
+      .insert(rows)
+      .select(OPTION_COLS)
+      .returns<Option[]>();
+    options = ins ?? [];
+  }
+
+  // 3) Copia os campos (coleta de dados).
+  const { data: srcFields } = await supabase
+    .from("step_fields")
+    .select(FIELD_COLS)
+    .eq("step_id", stepId)
+    .order("position")
+    .returns<StepField[]>();
+
+  let fields: StepField[] = [];
+  if (srcFields && srcFields.length > 0) {
+    const rows = srcFields.map((f) => ({
+      step_id: newStep.id,
+      kind: f.kind,
+      label: f.label,
+      required: f.required,
+      position: f.position,
+    }));
+    const { data: ins } = await supabase
+      .from("step_fields")
+      .insert(rows)
+      .select(FIELD_COLS)
+      .returns<StepField[]>();
+    fields = ins ?? [];
+  }
+
+  // 4) Copia os produtos vinculados.
+  const { data: srcProducts } = await supabase
+    .from("step_products")
+    .select("product_id, position")
+    .eq("step_id", stepId)
+    .order("position")
+    .returns<{ product_id: string; position: number }[]>();
+
+  const productIds = (srcProducts ?? []).map((p) => p.product_id);
+  if (srcProducts && srcProducts.length > 0) {
+    await supabase.from("step_products").insert(
+      srcProducts.map((p) => ({
+        step_id: newStep.id,
+        product_id: p.product_id,
+        position: p.position,
+      }))
+    );
+  }
+
+  return { step: newStep, options, fields, productIds };
+}
+
 export async function updateStepQuiet(
   stepId: string,
   fields: { title?: string; question_text?: string; type?: StepType }
@@ -145,6 +281,19 @@ export async function setStepNextQuiet(
     .update({ next_step_id: nextStepId })
     .eq("id", stepId);
   if (error) throw new Error("Erro ao conectar etapa: " + error.message);
+}
+
+// Salva o botão de ação geral (CTA) da etapa de resultado (ou null p/ remover).
+export async function setResultCtaQuiet(
+  stepId: string,
+  cta: ProductButton | null
+) {
+  const supabase = await createServerAuthClient();
+  const { error } = await supabase
+    .from("steps")
+    .update({ result_cta: cta })
+    .eq("id", stepId);
+  if (error) throw new Error("Erro ao salvar o CTA: " + error.message);
 }
 
 // Define a etapa inicial da jornada (sem recarregar o canvas).

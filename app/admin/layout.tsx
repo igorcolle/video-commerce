@@ -23,6 +23,7 @@ export default async function AdminLayout({
     return (
       <div
         id="admin-root"
+        suppressHydrationWarning
         className={`admin-theme ${inter.variable} flex min-h-screen flex-col`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

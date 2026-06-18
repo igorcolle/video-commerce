@@ -12,6 +12,7 @@ import type {
 import JourneyFlow from "@/components/admin/flow/JourneyFlow";
 import WidgetPanel from "@/components/admin/WidgetPanel";
 import ProductPhotoUpload from "@/components/admin/ProductPhotoUpload";
+import ProductButtons from "@/components/admin/ProductButtons";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
@@ -21,6 +22,7 @@ import {
   togglePublish,
   addProduct,
   updateProduct,
+  duplicateProduct,
   deleteProduct,
 } from "./actions";
 
@@ -52,7 +54,7 @@ export default async function EditorPage({
   const { data: steps } = await supabase
     .from("steps")
     .select(
-      "id, journey_id, type, title, question_text, video_url, position, next_step_id, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size"
+      "id, journey_id, type, title, question_text, video_url, position, next_step_id, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size, result_cta"
     )
     .eq("journey_id", id)
     .order("position")
@@ -70,7 +72,7 @@ export default async function EditorPage({
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, journey_id, name, photo_url, benefits, buy_link, whatsapp")
+    .select("id, journey_id, name, photo_url, benefits, buy_link, whatsapp, buttons")
     .eq("journey_id", id)
     .returns<Product[]>();
 
@@ -230,23 +232,26 @@ export default async function EditorPage({
                     initialUrl={p.photo_url}
                   />
                   <label className="flex flex-col gap-1.5">
-                    <span className="ds-label">Link de compra</span>
+                    <span className="ds-label">Link</span>
                     <Input name="buy_link" defaultValue={p.buy_link ?? ""} />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="ds-label">
-                      WhatsApp (com DDI, ex.: 5562999999999)
-                    </span>
-                    <Input name="whatsapp" defaultValue={p.whatsapp ?? ""} />
                   </label>
                 </div>
                 <label className="flex flex-col gap-1.5">
-                  <span className="ds-label">Benefícios</span>
+                  <span className="ds-label">Descrição</span>
                   <Textarea name="benefits" rows={2} defaultValue={p.benefits ?? ""} />
                 </label>
+                <ProductButtons initial={p.buttons ?? []} />
                 <div className="flex gap-2">
                   <Button type="submit" size="sm" className="w-fit">
                     Salvar produto
+                  </Button>
+                  <Button
+                    formAction={duplicateProduct}
+                    variant="secondary"
+                    size="sm"
+                    className="w-fit"
+                  >
+                    Duplicar
                   </Button>
                   <Button
                     formAction={deleteProduct}

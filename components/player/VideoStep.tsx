@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Step, Option } from "@/lib/supabase";
+import type { Step, Option, Product } from "@/lib/supabase";
 import {
   optionButtonVisual,
   optionsContainerClass,
@@ -12,6 +12,8 @@ import {
   questionBoxStyle,
   buttonTextSizeClass,
 } from "@/lib/buttonStyle";
+import { buildLeadMessage, buildWaLink } from "@/lib/wa";
+import { productCtaButtons } from "@/lib/productButtons";
 import OptionIcon from "@/components/ui/OptionIcon";
 import StoryVideo from "./StoryVideo";
 
@@ -39,6 +41,12 @@ type Props = {
   // Áudio persistente entre etapas.
   audioOn?: boolean;
   onAudioChange?: (on: boolean) => void;
+  // Produtos vinculados a esta etapa (abre o carrinho sobre o vídeo).
+  products?: Product[];
+  journeyName?: string;
+  answers?: Record<string, string>;
+  onWhatsapp?: (productId?: string) => void;
+  onBuy?: (productId: string) => void;
 };
 
 export default function VideoStep({
@@ -50,6 +58,11 @@ export default function VideoStep({
   onReady,
   audioOn,
   onAudioChange,
+  products = [],
+  journeyName = "",
+  answers = {},
+  onWhatsapp,
+  onBuy,
 }: Props) {
   const s = resolveButtonStyle(step);
   const visual = optionButtonVisual(step);
@@ -60,15 +73,21 @@ export default function VideoStep({
   // de minimizar). Resetam ao trocar de etapa via key={step.id} no Player.
   const [manualExpanded, setManualExpanded] = useState(false);
   const [userMinimized, setUserMinimized] = useState(false);
+  // Carrinho de produtos aberto sobre o vídeo.
+  const [cartOpen, setCartOpen] = useState(false);
+  const hasProducts = products.length > 0;
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center p-4 sm:p-8">
+    <main className="mx-auto flex h-[100dvh] w-full max-w-2xl min-h-0 flex-col items-center justify-center overflow-hidden p-2 sm:p-8">
       <StoryVideo
         src={step.video_url ?? ""}
         onClose={onClose}
         onReady={onReady}
         audioOn={audioOn}
         onAudioChange={onAudioChange}
+        fitToHeight
+        onCartClick={hasProducts ? () => setCartOpen((o) => !o) : undefined}
+        cartActive={cartOpen}
       >
         {({ remaining, ended }) => {
           // Botões disponíveis: sempre (se revelação desligada) ou quando faltar
@@ -79,13 +98,108 @@ export default function VideoStep({
             manualExpanded ||
             remaining <= s.revealSeconds;
 
-          // Overlay (pergunta + botões) visível = pronto E não minimizado.
-          const overlayVisible = buttonsReady && !userMinimized;
+          // Overlay (pergunta + botões) visível = pronto, não minimizado e com
+          // o carrinho fechado (ao abrir produtos, os botões recolhem).
+          const overlayVisible = buttonsReady && !userMinimized && !cartOpen;
 
           return (
             <>
               {/* Gradiente para legibilidade da pergunta/botões */}
               <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-transparent to-black/50" />
+
+              {/* Painel de produtos (carrinho) sobre o vídeo — minimalista. */}
+              {cartOpen && hasProducts && (
+                <div className="pointer-events-auto absolute inset-0 z-30 flex flex-col bg-black/55 backdrop-blur-sm">
+                  <div className="flex items-center justify-between px-4 pb-2 pt-4">
+                    <span className="text-sm font-bold text-white">
+                      Produtos
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setCartOpen(false)}
+                      aria-label="Fechar produtos"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="scrollbar-thin flex flex-1 flex-col gap-2.5 overflow-y-auto px-3 pb-4">
+                    {products.map((product) => {
+                      const msg = buildLeadMessage(journeyName, answers, [
+                        product.name,
+                      ]);
+                      const btns = productCtaButtons(product);
+                      return (
+                        <div
+                          key={product.id}
+                          className="flex gap-3 rounded-xl bg-white/95 p-2.5 shadow-lg"
+                        >
+                          {product.photo_url && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={product.photo_url}
+                              alt={product.name}
+                              className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                            />
+                          )}
+                          <div className="flex min-w-0 flex-1 flex-col gap-1">
+                            <h3 className="truncate text-sm font-bold text-gray-900">
+                              {product.name}
+                            </h3>
+                            {product.benefits && (
+                              <p className="line-clamp-2 text-xs text-gray-600">
+                                {product.benefits}
+                              </p>
+                            )}
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {btns.map((btn, i) => (
+                                <a
+                                  key={i}
+                                  href={
+                                    btn.kind === "whatsapp"
+                                      ? buildWaLink(btn.value, msg)
+                                      : btn.value
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={() =>
+                                    btn.kind === "whatsapp"
+                                      ? onWhatsapp?.(product.id)
+                                      : onBuy?.(product.id)
+                                  }
+                                  className={
+                                    btn.kind === "whatsapp"
+                                      ? "rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
+                                      : "rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                                  }
+                                >
+                                  {btn.label ||
+                                    (btn.kind === "whatsapp"
+                                      ? "WhatsApp"
+                                      : "Ver produto")}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Botão minimalista de voltar (centro-esquerda) */}
               {onBack && (
@@ -214,7 +328,7 @@ export default function VideoStep({
                         ))}
                       </div>
                     </>
-                  ) : (
+                  ) : cartOpen ? null : (
                     // Setinha indicando que pergunta + botões estão minimizados.
                     <button
                       type="button"

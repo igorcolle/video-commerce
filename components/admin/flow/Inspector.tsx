@@ -15,8 +15,10 @@ import type {
   QuestionPosition,
   QuestionFontSize,
   ButtonTextSize,
+  ProductButton,
 } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
+import ButtonsEditor from "@/components/admin/ButtonsEditor";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { Field } from "@/components/ui/Field";
 import { ColorPicker } from "@/components/ui/ColorPicker";
@@ -88,6 +90,7 @@ type Props = {
   onStepStyle: (patch: StylePatch) => void;
   onReplicateStyle: () => void;
   onSetProducts: (ids: string[]) => void;
+  onResultCta: (cta: ProductButton | null) => void;
   onSetStart: () => void;
   onDeleteStep: () => void;
   onVideoUploaded: (url: string) => void;
@@ -113,6 +116,10 @@ export default function Inspector(props: Props) {
   const [title, setTitle] = useState(step.title ?? "");
   const [question, setQuestion] = useState(step.question_text ?? "");
   const [selProducts, setSelProducts] = useState<string[]>(productIds);
+  // CTA geral (botão de ação) da etapa de resultado.
+  const [resultCta, setResultCta] = useState<ProductButton | null>(
+    step.result_cta ?? null
+  );
 
   // Estilo dos botões + pergunta (uniforme na etapa). Inicializa pela etapa.
   const init = resolveButtonStyle(step);
@@ -174,11 +181,13 @@ export default function Inspector(props: Props) {
     ? [
         { id: "pergunta", name: "Pergunta" },
         { id: "campos", name: "Campos" },
+        { id: "comportamento", name: "Comportamento" },
       ]
     : [
         { id: "pergunta", name: "Pergunta" },
         { id: "botoes", name: "Botões" },
         { id: "comportamento", name: "Comportamento" },
+        { id: "produtos", name: "Produtos" },
       ];
 
   return (
@@ -637,8 +646,9 @@ export default function Inspector(props: Props) {
               Começar minimizado e revelar perto do fim
             </label>
             <p className="mt-1.5 text-xs text-[var(--text-subtle)]">
-              A pergunta e os botões ficam ocultos e surgem juntos quando faltar
-              o tempo indicado (ou ao toque do cliente).
+              {isCollect
+                ? "O formulário fica oculto e surge quando faltar o tempo indicado para o fim do vídeo (ou ao toque do cliente)."
+                : "A pergunta e os botões ficam ocultos e surgem juntos quando faltar o tempo indicado (ou ao toque do cliente)."}
             </p>
             {revealEnabled && (
               <div className="mt-2">
@@ -690,6 +700,25 @@ export default function Inspector(props: Props) {
                 journeyId={props.journeyId}
                 currentUrl={step.video_url}
                 onUploaded={props.onVideoUploaded}
+              />
+            </div>
+
+            {/* Botão de ação geral (CTA) — aparece embaixo dos produtos. */}
+            <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-4">
+              <span className="ds-label block">Botão de ação geral (CTA)</span>
+              <p className="text-xs text-[var(--text-subtle)]">
+                Aparece embaixo dos produtos na tela de resultado. Deixe vazio
+                para não mostrar.
+              </p>
+              <ButtonsEditor
+                value={resultCta ? [resultCta] : []}
+                onChange={(arr) => {
+                  const next = arr[0] ?? null;
+                  setResultCta(next);
+                  props.onResultCta(next);
+                }}
+                max={1}
+                addLabel="+ Adicionar CTA"
               />
             </div>
           </>

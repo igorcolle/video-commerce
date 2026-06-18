@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Step, StepField } from "@/lib/supabase";
 import { maskWhatsapp, isValidEmail, isValidWhatsapp } from "@/lib/mask";
+import { resolveButtonStyle } from "@/lib/buttonStyle";
 import StoryVideo from "./StoryVideo";
 
 // =====================================================================
@@ -43,6 +44,10 @@ export default function CollectStep({
 }: Props) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Revelação por tempo: o formulário pode começar oculto e surgir perto do
+  // fim do vídeo (ou ao toque na setinha). Reusa as colunas buttons_reveal_*.
+  const s = resolveButtonStyle(step);
+  const [manualExpanded, setManualExpanded] = useState(false);
 
   function setValue(field: StepField, raw: string) {
     const v = field.kind === "whatsapp" ? maskWhatsapp(raw) : raw;
@@ -74,15 +79,25 @@ export default function CollectStep({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center p-4 sm:p-8">
+    <main className="mx-auto flex h-[100dvh] w-full max-w-2xl min-h-0 flex-col items-center justify-center overflow-hidden p-2 sm:p-8">
       <StoryVideo
         src={step.video_url ?? ""}
         onClose={onClose}
         onReady={onReady}
         audioOn={audioOn}
         onAudioChange={onAudioChange}
+        fitToHeight
       >
-        {() => (
+        {({ remaining, ended }) => {
+          // Formulário disponível: sempre (se revelação desligada) ou quando
+          // faltar X segundos / o vídeo terminar / o cliente tocar na setinha.
+          const formReady =
+            !s.revealEnabled ||
+            ended ||
+            manualExpanded ||
+            remaining <= s.revealSeconds;
+
+          return (
           <>
             {/* Gradiente para legibilidade */}
             <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
@@ -110,8 +125,30 @@ export default function CollectStep({
               </button>
             )}
 
-            {/* Formulário */}
+            {/* Formulário (ou setinha, quando minimizado pela revelação) */}
             <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end p-4">
+              {!formReady ? (
+                <button
+                  type="button"
+                  onClick={() => setManualExpanded(true)}
+                  aria-label="Mostrar formulário"
+                  className="pointer-events-auto mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
+                >
+                  <svg
+                    className="animate-bounce"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                </button>
+              ) : (
               <form
                 onSubmit={handleSubmit}
                 className="pointer-events-auto flex flex-col gap-2.5 rounded-2xl bg-white/95 p-4 shadow-xl backdrop-blur-sm"
@@ -153,9 +190,11 @@ export default function CollectStep({
                   Continuar
                 </button>
               </form>
+              )}
             </div>
           </>
-        )}
+          );
+        }}
       </StoryVideo>
     </main>
   );

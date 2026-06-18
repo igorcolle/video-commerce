@@ -212,9 +212,30 @@ export async function addProduct(formData: FormData) {
   revalidatePath(editorPath(journeyId));
 }
 
+// Lê o JSON dos botões de ação (vindo do <ProductButtons/>), valida e
+// devolve no máximo 2 botões com valor preenchido.
+function parseButtons(raw: string): { kind: string; label: string; value: string }[] {
+  try {
+    const arr = JSON.parse(raw || "[]");
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((b) => b && (b.kind === "whatsapp" || b.kind === "custom"))
+      .map((b) => ({
+        kind: b.kind,
+        label: String(b.label || "").trim(),
+        value: String(b.value || "").trim(),
+      }))
+      .filter((b) => b.value !== "") // descarta linhas sem destino
+      .slice(0, 2);
+  } catch {
+    return [];
+  }
+}
+
 export async function updateProduct(formData: FormData) {
   const id = String(formData.get("id"));
   const journeyId = String(formData.get("journey_id"));
+  const buttons = parseButtons(String(formData.get("buttons_json") || "[]"));
 
   const supabase = await createServerAuthClient();
   const { error } = await supabase
@@ -224,10 +245,36 @@ export async function updateProduct(formData: FormData) {
       photo_url: String(formData.get("photo_url") || "").trim() || null,
       benefits: String(formData.get("benefits") || "").trim() || null,
       buy_link: String(formData.get("buy_link") || "").trim() || null,
-      whatsapp: String(formData.get("whatsapp") || "").trim() || null,
+      buttons,
     })
     .eq("id", id);
   if (error) throw new Error("Erro ao salvar produto: " + error.message);
+  revalidatePath(editorPath(journeyId));
+}
+
+// Duplica um produto (com seus botões), criando uma cópia "(cópia)".
+export async function duplicateProduct(formData: FormData) {
+  const id = String(formData.get("id"));
+  const journeyId = String(formData.get("journey_id"));
+
+  const supabase = await createServerAuthClient();
+  const { data: src, error: readErr } = await supabase
+    .from("products")
+    .select("name, photo_url, benefits, buy_link, buttons")
+    .eq("id", id)
+    .single();
+  if (readErr || !src)
+    throw new Error("Erro ao ler produto: " + readErr?.message);
+
+  const { error } = await supabase.from("products").insert({
+    journey_id: journeyId,
+    name: `${src.name} (cópia)`,
+    photo_url: src.photo_url,
+    benefits: src.benefits,
+    buy_link: src.buy_link,
+    buttons: src.buttons ?? [],
+  });
+  if (error) throw new Error("Erro ao duplicar produto: " + error.message);
   revalidatePath(editorPath(journeyId));
 }
 

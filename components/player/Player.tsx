@@ -274,6 +274,13 @@ export default function Player({
     .filter((o) => o.step_id === currentStep.id)
     .sort((a, b) => a.position - b.position);
 
+  // Produtos vinculados a esta etapa de pergunta (alimentam o carrinho).
+  const stepCartProducts = stepProducts
+    .filter((sp) => sp.step_id === currentStep.id)
+    .sort((a, b) => a.position - b.position)
+    .map((sp) => products.find((p) => p.id === sp.product_id))
+    .filter((p): p is Product => Boolean(p));
+
   // Pré-carrega os vídeos das PRÓXIMAS etapas (destinos dos botões), mas só
   // DEPOIS que o vídeo atual já bufferizou (readyStepId), para que a troca fique
   // instantânea sem roubar banda de quem está tocando.
@@ -303,6 +310,21 @@ export default function Player({
         onReady={() => setReadyStepId(currentStep.id)}
         audioOn={audioOn}
         onAudioChange={setAudioOn}
+        products={stepCartProducts}
+        journeyName={journey.name}
+        answers={answers}
+        onWhatsapp={(productId) =>
+          sendEvent("click_whatsapp", {
+            step_id: currentStep.id,
+            metadata: { product_id: productId ?? null },
+          })
+        }
+        onBuy={(productId) =>
+          sendEvent("click_buy", {
+            step_id: currentStep.id,
+            metadata: { product_id: productId },
+          })
+        }
       />
 
       {/* Pré-carregamento dos próximos vídeos. Fica fora da tela (e não

@@ -28,6 +28,13 @@ type Props = {
   // os próximos vídeos já começam com som.
   audioOn?: boolean;
   onAudioChange?: (on: boolean) => void;
+  // Botão de carrinho (entre velocidade e reiniciar). Só aparece quando
+  // onCartClick é fornecido (ex.: etapa de pergunta com produtos vinculados).
+  onCartClick?: () => void;
+  cartActive?: boolean;
+  // Quando true, o frame se ajusta pela altura da tela (player principal), para
+  // caber 100% no mobile. Default false (sizing pela largura — ex.: resultado).
+  fitToHeight?: boolean;
   // children pode ser um nó simples ou uma função que recebe o estado de
   // reprodução (tempo restante + se terminou), para o overlay reagir.
   children?: ReactNode | ((s: PlaybackState) => ReactNode);
@@ -43,6 +50,9 @@ export default function StoryVideo({
   onReady,
   audioOn = false,
   onAudioChange,
+  onCartClick,
+  cartActive = false,
+  fitToHeight = false,
   children,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -131,7 +141,17 @@ export default function StoryVideo({
   }
 
   return (
-    <div className="relative mx-auto aspect-[9/16] w-full max-w-[420px] overflow-hidden rounded-xl bg-black">
+    <div
+      className={
+        fitToHeight
+          ? // Player principal: a largura é limitada pela ALTURA disponível
+            // (min entre 100% e a largura que mantém 9:16 dentro da tela), então
+            // vídeo + botões cabem 100% no mobile, sem cortar nem transbordar.
+            "relative mx-auto aspect-[9/16] w-[min(100%,calc((100dvh-1rem)*9/16))] max-w-[420px] overflow-hidden rounded-xl bg-black"
+          : // Demais usos (ex.: tela de resultado): dimensionado pela largura.
+            "relative mx-auto aspect-[9/16] w-full max-w-[420px] overflow-hidden rounded-xl bg-black"
+      }
+    >
       {src && (
         <video
           ref={videoRef}
@@ -232,6 +252,24 @@ export default function StoryVideo({
           </span>
         </ControlButton>
 
+        {/* Carrinho (produtos) — entre velocidade e reiniciar; só quando há
+            produtos vinculados à etapa. Fica destacado quando aberto. */}
+        {onCartClick && (
+          <button
+            type="button"
+            onClick={onCartClick}
+            aria-label="Produtos"
+            title="Produtos"
+            className={`flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
+              cartActive
+                ? "bg-white text-gray-900"
+                : "bg-black/45 text-white hover:bg-black/65"
+            }`}
+          >
+            <IconCart />
+          </button>
+        )}
+
         {/* Reiniciar fica SEMPRE ativo: o cliente pode recomeçar quando quiser. */}
         <ControlButton label="Reiniciar" onClick={restart}>
           <IconRestart />
@@ -318,6 +356,16 @@ function IconClose() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+function IconCart() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
     </svg>
   );
 }

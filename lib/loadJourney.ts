@@ -40,7 +40,7 @@ export async function loadJourney(slug: string): Promise<LoadedJourney | null> {
   const { data: steps } = await supabase
     .from("steps")
     .select(
-      "id, journey_id, type, title, question_text, video_url, position, next_step_id, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size"
+      "id, journey_id, type, title, question_text, video_url, position, next_step_id, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size, result_cta"
     )
     .eq("journey_id", journey.id)
     .order("position")
@@ -62,7 +62,7 @@ export async function loadJourney(slug: string): Promise<LoadedJourney | null> {
   // 4) Os produtos da jornada.
   const { data: products } = await supabase
     .from("products")
-    .select("id, journey_id, name, photo_url, benefits, buy_link, whatsapp")
+    .select("id, journey_id, name, photo_url, benefits, buy_link, whatsapp, buttons")
     .eq("journey_id", journey.id)
     .returns<Product[]>();
 
