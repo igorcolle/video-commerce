@@ -24,3 +24,205 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Aparição suave dos botões do player quando são revelados. */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulso leve nos botões quando o vídeo termina (convida ao clique, sem distrair). */
+@keyframes attentionPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Pílula "ativar som": brilho verde luminoso piscando (chama atenção). */
+@keyframes soundGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px 1px rgba(34, 197, 94, 0.7),
+      0 0 14px 4px rgba(34, 197, 94, 0.45);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 14px 4px rgba(34, 197, 94, 0.95),
+      0 0 28px 10px rgba(34, 197, 94, 0.7);
+    opacity: 0.85;
+  }
+}
+.sound-pill-glow {
+  animation: soundGlow 1s ease-in-out infinite;
+}
+
+/* =====================================================================
+   DESIGN SYSTEM DO ADMIN (inspirado na Attio)
+   Tudo fica escopado em ".admin-theme" para NÃO afetar a landing nem o
+   player público. O wrapper recebe essa classe em app/admin/layout.tsx.
+   ===================================================================== */
+.admin-theme {
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --surface-2: #fbfbfc;
+  --border: #e8eaed;
+  --text: #1a1d21;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --primary: #1a1d21;
+  --primary-hover: #2c3036;
+  --primary-fg: #ffffff;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --danger-border: #f3c4c4;
+  --success-bg: #ecfdf3;
+  --success-fg: #067647;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+
+  min-height: 100vh;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Superfícies */
+.admin-theme .ds-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Botões */
+.admin-theme .ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+.admin-theme .ds-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.admin-theme .ds-btn-sm {
+  padding: 0.3125rem 0.625rem;
+  font-size: 0.8125rem;
+}
+.admin-theme .ds-btn-primary {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+.admin-theme .ds-btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+.admin-theme .ds-btn-accent {
+  background: var(--accent);
+  color: #fff;
+}
+.admin-theme .ds-btn-accent:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.admin-theme .ds-btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+.admin-theme .ds-btn-secondary:hover:not(:disabled) {
+  background: var(--surface);
+}
+.admin-theme .ds-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+.admin-theme .ds-btn-ghost:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+.admin-theme .ds-btn-danger {
+  background: var(--bg);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+.admin-theme .ds-btn-danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+/* Campos de formulário */
+.admin-theme .ds-input,
+.admin-theme .ds-select,
+.admin-theme .ds-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.admin-theme .ds-input::placeholder,
+.admin-theme .ds-textarea::placeholder {
+  color: var(--text-subtle);
+}
+.admin-theme .ds-input:focus,
+.admin-theme .ds-select:focus,
+.admin-theme .ds-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.admin-theme .ds-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Etiquetas (badges) */
+.admin-theme .ds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.admin-theme .ds-badge-neutral {
+  background: var(--surface);
+  color: var(--text-muted);
+}
+.admin-theme .ds-badge-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.admin-theme .ds-badge-success {
+  background: var(--success-bg);
+  color: var(--success-fg);
+}

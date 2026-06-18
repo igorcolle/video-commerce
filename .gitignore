@@ -32,10 +32,23 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...mas o template SEM segredos pode ser versionado:
+!.env.example
 
 # vercel
 .vercel
 
+# config local do Claude Code (específica desta máquina)
+/.claude/
+
+# documentos internos de estratégia/marketing (não versionar)
+/PRD Estratégico e Plano de Marketing.docx
+/PRD Estratégico e Plano de Marketing.pdf
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# arquivos temporários de editor/sync
+*.tmp.*
+*.tmp
