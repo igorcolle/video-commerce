@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Video Commerce — Jornadas Interativas em Vídeo
 
-## Getting Started
+Plataforma onde empresas criam **jornadas de venda interativas em vídeo**. O
+cliente assiste a vídeos curtos, clica em botões de decisão e é guiado, de forma
+ramificada, até uma recomendação de produto e um CTA (geralmente WhatsApp).
 
-First, run the development server:
+Duas experiências no mesmo app:
+
+1. **Player público** — o cliente final vive a jornada (vídeo vertical 9:16 +
+   botões + ramificação + recomendação + WhatsApp).
+2. **Painel admin** — a empresa cria/edita jornadas (flow builder) e analisa os
+   resultados.
+
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Supabase (Postgres + Auth + Storage)
+- Tailwind CSS
+- Compressão de vídeo no envio via ffmpeg (WebAssembly)
+- WhatsApp via links `wa.me`
+- Deploy na Vercel
+
+## Como rodar localmente
 
 ```bash
+npm install
+cp .env.example .env.local   # preencha com as chaves do seu Supabase
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variáveis de ambiente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Veja `.env.example` e o passo a passo em `SETUP_SUPABASE.md`. As chaves reais
+ficam em `.env.local` (que **não** é versionado). Nunca exponha
+`SUPABASE_SERVICE_ROLE_KEY` no lado do cliente.
 
-## Learn More
+## Banco de dados
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Os scripts `supabase_*.sql` criam o schema, o storage e dados de exemplo. Rode-os
+no SQL Editor do Supabase (detalhes em `SETUP_SUPABASE.md`).
