@@ -1,0 +1,1 @@
+{"label":"text-base sm:text-lg","subtitle":"text-xs sm:text-sm"}

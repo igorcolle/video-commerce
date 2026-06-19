@@ -1,0 +1,18 @@
+{
+  "layout": "stack",
+  "template": "solid",
+  "color": "#ffffff",
+  "opacity": 90,
+  "fontColor": "#111827",
+  "font": "inter",
+  "borderColor": "",
+  "shadow": "md",
+  "revealEnabled": false,
+  "revealSeconds": 5,
+  "questionPosition": "top",
+  "questionFontSize": "md",
+  "questionFontColor": "#ffffff",
+  "questionBgEnabled": true,
+  "questionBgColor": "#000000",
+  "buttonTextSize": "md"
+}

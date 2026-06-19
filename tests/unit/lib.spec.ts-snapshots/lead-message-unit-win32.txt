@@ -1,0 +1,6 @@
+Olá! Vim pela jornada "Jornada Demo".
+
+Uso: Em casa
+Área: Pequena
+
+Produtos sugeridos: Produto A, Produto B

@@ -1,0 +1,9 @@
+{
+  "className": "rounded-2xl px-5 py-3.5 text-left transition-transform active:scale-[.98]",
+  "style": {
+    "color": "#ffffff",
+    "fontFamily": "var(--font-inter), sans-serif",
+    "boxShadow": "0 4px 12px rgba(0,0,0,0.45)",
+    "backgroundColor": "rgba(26, 29, 33, 1)"
+  }
+}
