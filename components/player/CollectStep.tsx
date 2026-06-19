@@ -5,6 +5,7 @@ import type { Step, StepField } from "@/lib/supabase";
 import { maskWhatsapp, isValidEmail, isValidWhatsapp } from "@/lib/mask";
 import { resolveButtonStyle } from "@/lib/buttonStyle";
 import StoryVideo from "./StoryVideo";
+import BackButton from "./BackButton";
 
 // =====================================================================
 // CollectStep — etapa de "coleta de dados". Igual à etapa de pergunta
@@ -103,27 +104,7 @@ export default function CollectStep({
             <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
 
             {/* Botão minimalista de voltar (centro-esquerda) */}
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                aria-label="Voltar ao vídeo anterior"
-                className="pointer-events-auto absolute left-3 top-1/2 z-30 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-            )}
+            {onBack && <BackButton onBack={onBack} />}
 
             {/* Formulário (ou setinha, quando minimizado pela revelação) */}
             <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end p-4">

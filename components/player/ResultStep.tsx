@@ -1,8 +1,8 @@
 "use client";
 
-import type { Step, Product, ProductButton } from "@/lib/supabase";
-import { buildLeadMessage, buildWaLink } from "@/lib/wa";
-import { productCtaButtons } from "@/lib/productButtons";
+import type { Step, Product } from "@/lib/supabase";
+import { buildLeadMessage } from "@/lib/wa";
+import { productCtaButtons, ctaButtonHref } from "@/lib/productButtons";
 import StoryVideo from "./StoryVideo";
 
 // =====================================================================
@@ -20,13 +20,6 @@ type Props = {
   onBuy: (productId: string) => void;
   onClose?: () => void;
 };
-
-// Link de um botão: WhatsApp (wa.me com a mensagem do lead) ou link direto.
-function buttonHref(btn: ProductButton, message: string): string {
-  return btn.kind === "whatsapp"
-    ? buildWaLink(btn.value, message)
-    : btn.value;
-}
 
 export default function ResultStep({
   step,
@@ -90,7 +83,7 @@ export default function ResultStep({
                 {btns.map((btn, i) => (
                   <a
                     key={i}
-                    href={buttonHref(btn, msg)}
+                    href={ctaButtonHref(btn, msg)}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() =>
@@ -116,7 +109,7 @@ export default function ResultStep({
       {/* CTA geral configurável (WhatsApp ou link personalizado). */}
       {cta && cta.value && (
         <a
-          href={buttonHref(cta, ctaMsg)}
+          href={ctaButtonHref(cta, ctaMsg)}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => (cta.kind === "whatsapp" ? onWhatsapp() : onBuy(""))}

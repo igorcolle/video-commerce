@@ -1,4 +1,5 @@
 import type { Product, ProductButton } from "@/lib/supabase";
+import { buildWaLink } from "@/lib/wa";
 
 // =====================================================================
 // Botões de ação de um produto no player.
@@ -11,4 +12,10 @@ export function productCtaButtons(product: Product): ProductButton[] {
     return [{ kind: "custom", label: "Ver produto", value: product.buy_link }];
   }
   return [];
+}
+
+// Link de um botão de ação: WhatsApp (wa.me com a mensagem do lead) ou link
+// direto (personalizado). Usado no resultado e no carrinho do player.
+export function ctaButtonHref(btn: ProductButton, message: string): string {
+  return btn.kind === "whatsapp" ? buildWaLink(btn.value, message) : btn.value;
 }
