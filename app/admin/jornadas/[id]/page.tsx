@@ -9,6 +9,13 @@ import type {
   StepProduct,
   StepField,
 } from "@/lib/supabase";
+import {
+  STEP_COLUMNS,
+  OPTION_COLUMNS,
+  FIELD_COLUMNS,
+  PRODUCT_COLUMNS,
+  STEP_PRODUCT_COLUMNS,
+} from "@/lib/queries";
 import JourneyFlow from "@/components/admin/flow/JourneyFlow";
 import WidgetPanel from "@/components/admin/WidgetPanel";
 import ProductPhotoUpload from "@/components/admin/ProductPhotoUpload";
@@ -53,9 +60,7 @@ export default async function EditorPage({
 
   const { data: steps } = await supabase
     .from("steps")
-    .select(
-      "id, journey_id, type, title, question_text, video_url, position, next_step_id, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size, result_cta"
-    )
+    .select(STEP_COLUMNS)
     .eq("journey_id", id)
     .order("position")
     .returns<Step[]>();
@@ -65,26 +70,26 @@ export default async function EditorPage({
 
   const { data: options } = await supabase
     .from("options")
-    .select("id, step_id, label, subtitle, icon, next_step_id, position")
+    .select(OPTION_COLUMNS)
     .in("step_id", stepIds.length ? stepIds : ["-"])
     .order("position")
     .returns<Option[]>();
 
   const { data: products } = await supabase
     .from("products")
-    .select("id, journey_id, name, photo_url, benefits, buy_link, whatsapp, buttons")
+    .select(PRODUCT_COLUMNS)
     .eq("journey_id", id)
     .returns<Product[]>();
 
   const { data: stepProducts } = await supabase
     .from("step_products")
-    .select("step_id, product_id, position")
+    .select(STEP_PRODUCT_COLUMNS)
     .in("step_id", stepIds.length ? stepIds : ["-"])
     .returns<StepProduct[]>();
 
   const { data: stepFields } = await supabase
     .from("step_fields")
-    .select("id, step_id, kind, label, required, position")
+    .select(FIELD_COLUMNS)
     .in("step_id", stepIds.length ? stepIds : ["-"])
     .order("position")
     .returns<StepField[]>();

@@ -2,26 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerAuthClient } from "@/lib/supabase-server";
+import { nextPosition } from "@/lib/nextPosition";
 
 // Caminho do editor (para revalidar a tela após cada mudança).
 function editorPath(journeyId: string) {
   return `/admin/jornadas/${journeyId}`;
-}
-
-// Próxima posição livre (para manter etapas/opções em ordem).
-async function nextPosition(
-  supabase: Awaited<ReturnType<typeof createServerAuthClient>>,
-  table: "steps" | "options",
-  column: "journey_id" | "step_id",
-  value: string
-): Promise<number> {
-  const { data } = await supabase
-    .from(table)
-    .select("position")
-    .eq(column, value)
-    .order("position", { ascending: false })
-    .limit(1);
-  return ((data?.[0]?.position as number | undefined) ?? 0) + 1;
 }
 
 // ---------------------------------------------------------------- JORNADA

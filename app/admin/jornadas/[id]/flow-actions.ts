@@ -1,19 +1,19 @@
 "use server";
 
 import { createServerAuthClient } from "@/lib/supabase-server";
+import { nextPosition } from "@/lib/nextPosition";
+import type { StepStylePatch } from "@/lib/buttonStyle";
+import {
+  STEP_COLUMNS,
+  OPTION_COLUMNS,
+  FIELD_COLUMNS,
+} from "@/lib/queries";
 import type {
   Step,
   Option,
   StepField,
   FieldKind,
   StepType,
-  ButtonLayout,
-  ButtonTemplate,
-  ButtonFont,
-  ButtonShadow,
-  QuestionPosition,
-  QuestionFontSize,
-  ButtonTextSize,
   WidgetFormat,
   WidgetPosition,
   ProductButton,
@@ -37,11 +37,10 @@ const STYLE_COLS = [
   "question_bg_color",
 ] as const;
 
-// Colunas selecionadas ao devolver uma etapa/opção (mantém os tipos completos).
-const STEP_COLS =
-  "id, journey_id, type, title, question_text, video_url, position, pos_x, pos_y, buttons_layout, button_template, button_color, button_opacity, button_font_color, button_font, button_border_color, button_shadow, buttons_reveal_enabled, buttons_reveal_seconds, question_position, question_font_size, question_font_color, question_bg_enabled, question_bg_color, button_text_size, result_cta";
-const OPTION_COLS = "id, step_id, label, subtitle, icon, next_step_id, position";
-const FIELD_COLS = "id, step_id, kind, label, required, position";
+// Colunas selecionadas ao devolver uma etapa/opção/campo (fonte única em queries.ts).
+const STEP_COLS = STEP_COLUMNS;
+const OPTION_COLS = OPTION_COLUMNS;
+const FIELD_COLS = FIELD_COLUMNS;
 
 // Rótulo padrão de cada tipo de campo de coleta.
 const FIELD_DEFAULT_LABEL: Record<FieldKind, string> = {
@@ -57,21 +56,6 @@ const FIELD_DEFAULT_LABEL: Record<FieldKind, string> = {
 // (React Flow) mantém seu próprio estado e atualiza na hora, sem recarregar.
 // As de "...Returning" devolvem o registro criado para o canvas inseri-lo.
 // =====================================================================
-
-async function nextPosition(
-  supabase: Awaited<ReturnType<typeof createServerAuthClient>>,
-  table: "steps" | "options" | "step_fields",
-  column: "journey_id" | "step_id",
-  value: string
-): Promise<number> {
-  const { data } = await supabase
-    .from(table)
-    .select("position")
-    .eq(column, value)
-    .order("position", { ascending: false })
-    .limit(1);
-  return ((data?.[0]?.position as number | undefined) ?? 0) + 1;
-}
 
 // ---------------------------------------------------------------- ETAPAS
 
@@ -347,24 +331,7 @@ export async function updateOptionFieldsQuiet(
 // Salva o estilo uniforme dos botões da etapa (layout, template, cores, opacidade).
 export async function updateStepStyleQuiet(
   stepId: string,
-  fields: {
-    buttons_layout?: ButtonLayout;
-    button_template?: ButtonTemplate;
-    button_color?: string;
-    button_opacity?: number;
-    button_font_color?: string;
-    button_font?: ButtonFont;
-    button_border_color?: string;
-    button_shadow?: ButtonShadow;
-    buttons_reveal_enabled?: boolean;
-    buttons_reveal_seconds?: number;
-    question_position?: QuestionPosition;
-    question_font_size?: QuestionFontSize;
-    question_font_color?: string;
-    question_bg_enabled?: boolean;
-    question_bg_color?: string;
-    button_text_size?: ButtonTextSize;
-  }
+  fields: StepStylePatch
 ) {
   const supabase = await createServerAuthClient();
   const { error } = await supabase.from("steps").update(fields).eq("id", stepId);

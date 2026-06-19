@@ -38,31 +38,13 @@ import {
   optionsContainerClass,
   buttonTextSizeClass,
   fontFamilyOf,
+  type StepStylePatch,
 } from "@/lib/buttonStyle";
 
 // Painel lateral para editar o bloco selecionado.
 // É remontado a cada seleção (key=step.id no pai), então pode usar estado
 // local inicializado pelas props. O conteúdo é dividido em ABAS para reduzir
 // a rolagem e facilitar a edição (UX).
-type StylePatch = {
-  buttons_layout?: ButtonLayout;
-  button_template?: ButtonTemplate;
-  button_color?: string;
-  button_opacity?: number;
-  button_font_color?: string;
-  button_font?: ButtonFont;
-  button_border_color?: string;
-  button_shadow?: ButtonShadow;
-  buttons_reveal_enabled?: boolean;
-  buttons_reveal_seconds?: number;
-  question_position?: QuestionPosition;
-  question_font_size?: QuestionFontSize;
-  question_font_color?: string;
-  question_bg_enabled?: boolean;
-  question_bg_color?: string;
-  button_text_size?: ButtonTextSize;
-};
-
 type Props = {
   journeyId: string;
   step: Step;
@@ -87,7 +69,7 @@ type Props = {
   ) => void;
   onDeleteField: (fieldId: string) => void;
   onReorderField: (fieldId: string, direction: "up" | "down") => void;
-  onStepStyle: (patch: StylePatch) => void;
+  onStepStyle: (patch: StepStylePatch) => void;
   onReplicateStyle: () => void;
   onSetProducts: (ids: string[]) => void;
   onResultCta: (cta: ProductButton | null) => void;

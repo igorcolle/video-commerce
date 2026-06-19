@@ -16,6 +16,27 @@ import type {
   Step,
 } from "./supabase";
 
+// Conjunto de campos de estilo (botões + pergunta) que o admin altera de uma
+// vez. Centralizado para Inspector, JourneyFlow e os server actions usarem.
+export type StepStylePatch = {
+  buttons_layout?: ButtonLayout;
+  button_template?: ButtonTemplate;
+  button_color?: string;
+  button_opacity?: number;
+  button_font_color?: string;
+  button_font?: ButtonFont;
+  button_border_color?: string;
+  button_shadow?: ButtonShadow;
+  buttons_reveal_enabled?: boolean;
+  buttons_reveal_seconds?: number;
+  question_position?: QuestionPosition;
+  question_font_size?: QuestionFontSize;
+  question_font_color?: string;
+  question_bg_enabled?: boolean;
+  question_bg_color?: string;
+  button_text_size?: ButtonTextSize;
+};
+
 // Paleta de amostras (o admin clica; não digita código de cor).
 export const PALETTE: string[] = [
   "#ffffff", "#111827", "#1f2937", "#374151",

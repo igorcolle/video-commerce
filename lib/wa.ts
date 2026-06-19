@@ -3,10 +3,7 @@
 // Usado no CTA final da jornada — espelha o exemplo da seção 7.7 do PRD.
 // =====================================================================
 
-// Deixa só os dígitos do número (wa.me não aceita espaços/símbolos).
-function onlyDigits(phone: string): string {
-  return phone.replace(/\D/g, "");
-}
+import { onlyDigits } from "./mask";
 
 // Monta a mensagem-resumo do lead a partir das respostas + produtos sugeridos.
 export function buildLeadMessage(

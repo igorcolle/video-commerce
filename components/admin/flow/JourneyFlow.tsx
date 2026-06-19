@@ -21,6 +21,7 @@ import StepPreviewModal from "./StepPreviewModal";
 import DeletableEdge from "./DeletableEdge";
 import { StepActionsContext } from "./StepActionsContext";
 import { Button } from "@/components/ui/Button";
+import type { StepStylePatch } from "@/lib/buttonStyle";
 import type {
   Journey,
   Step,
@@ -30,35 +31,8 @@ import type {
   StepField,
   FieldKind,
   StepType,
-  ButtonLayout,
-  ButtonTemplate,
-  ButtonFont,
-  ButtonShadow,
-  QuestionPosition,
-  QuestionFontSize,
-  ButtonTextSize,
   ProductButton,
 } from "@/lib/supabase";
-
-// Campos de estilo dos botões que podem ser atualizados de uma vez.
-type StepStylePatch = {
-  buttons_layout?: ButtonLayout;
-  button_template?: ButtonTemplate;
-  button_color?: string;
-  button_opacity?: number;
-  button_font_color?: string;
-  button_font?: ButtonFont;
-  button_border_color?: string;
-  button_shadow?: ButtonShadow;
-  buttons_reveal_enabled?: boolean;
-  buttons_reveal_seconds?: number;
-  question_position?: QuestionPosition;
-  question_font_size?: QuestionFontSize;
-  question_font_color?: string;
-  question_bg_enabled?: boolean;
-  question_bg_color?: string;
-  button_text_size?: ButtonTextSize;
-};
 import * as flow from "@/app/admin/jornadas/[id]/flow-actions";
 
 type Props = {
