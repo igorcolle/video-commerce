@@ -43,49 +43,48 @@ export async function loadJourney(slug: string): Promise<LoadedJourney | null> {
 
   if (!journey) return null;
 
-  // 2) Todas as etapas da jornada (ordenadas).
-  const { data: steps } = await supabase
-    .from("steps")
-    .select(STEP_COLUMNS)
-    .eq("journey_id", journey.id)
-    .order("position")
-    .returns<Step[]>();
+  // 2) Etapas e produtos só dependem da jornada → buscam em paralelo.
+  const [{ data: steps }, { data: products }] = await Promise.all([
+    supabase
+      .from("steps")
+      .select(STEP_COLUMNS)
+      .eq("journey_id", journey.id)
+      .order("position")
+      .returns<Step[]>(),
+    supabase
+      .from("products")
+      .select(PRODUCT_COLUMNS)
+      .eq("journey_id", journey.id)
+      .returns<Product[]>(),
+  ]);
 
   const stepIds = (steps ?? []).map((s) => s.id);
   const safeIds = stepIds.length
     ? stepIds
     : ["00000000-0000-0000-0000-000000000000"];
 
-  // 3) Os botões (opções) de todas as etapas.
-  const { data: options } = await supabase
-    .from("options")
-    .select(OPTION_COLUMNS)
-    .in("step_id", safeIds)
-    .order("position")
-    .returns<Option[]>();
-
-  // 4) Os produtos da jornada.
-  const { data: products } = await supabase
-    .from("products")
-    .select(PRODUCT_COLUMNS)
-    .eq("journey_id", journey.id)
-    .returns<Product[]>();
-
-  // 5) Quais produtos aparecem em cada etapa de resultado.
-  const { data: stepProducts } = await supabase
-    .from("step_products")
-    .select(STEP_PRODUCT_COLUMNS)
-    .in("step_id", safeIds)
-    .order("position")
-    .returns<StepProduct[]>();
-
-  // 6) Os campos de formulário das etapas de "coleta de dados".
-  const { data: stepFields } = await supabase
-    .from("step_fields")
-    .select(FIELD_COLUMNS)
-    .in("step_id", safeIds)
-    .order("position")
-    .returns<StepField[]>();
+  // 3) Opções, vínculos de produto e campos dependem dos stepIds → paralelo.
+  const [{ data: options }, { data: stepProducts }, { data: stepFields }] =
+    await Promise.all([
+      supabase
+        .from("options")
+        .select(OPTION_COLUMNS)
+        .in("step_id", safeIds)
+        .order("position")
+        .returns<Option[]>(),
+      supabase
+        .from("step_products")
+        .select(STEP_PRODUCT_COLUMNS)
+        .in("step_id", safeIds)
+        .order("position")
+        .returns<StepProduct[]>(),
+      supabase
+        .from("step_fields")
+        .select(FIELD_COLUMNS)
+        .in("step_id", safeIds)
+        .order("position")
+        .returns<StepField[]>(),
+    ]);
 
   return {
     journey,

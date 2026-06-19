@@ -58,41 +58,46 @@ export default async function EditorPage({
 
   if (!journey) notFound();
 
-  const { data: steps } = await supabase
-    .from("steps")
-    .select(STEP_COLUMNS)
-    .eq("journey_id", id)
-    .order("position")
-    .returns<Step[]>();
+  // Etapas e produtos só dependem da jornada → buscam em paralelo.
+  const [{ data: steps }, { data: products }] = await Promise.all([
+    supabase
+      .from("steps")
+      .select(STEP_COLUMNS)
+      .eq("journey_id", id)
+      .order("position")
+      .returns<Step[]>(),
+    supabase
+      .from("products")
+      .select(PRODUCT_COLUMNS)
+      .eq("journey_id", id)
+      .returns<Product[]>(),
+  ]);
 
   const stepList = steps ?? [];
   const stepIds = stepList.map((s) => s.id);
+  const safeIds = stepIds.length ? stepIds : ["-"];
 
-  const { data: options } = await supabase
-    .from("options")
-    .select(OPTION_COLUMNS)
-    .in("step_id", stepIds.length ? stepIds : ["-"])
-    .order("position")
-    .returns<Option[]>();
-
-  const { data: products } = await supabase
-    .from("products")
-    .select(PRODUCT_COLUMNS)
-    .eq("journey_id", id)
-    .returns<Product[]>();
-
-  const { data: stepProducts } = await supabase
-    .from("step_products")
-    .select(STEP_PRODUCT_COLUMNS)
-    .in("step_id", stepIds.length ? stepIds : ["-"])
-    .returns<StepProduct[]>();
-
-  const { data: stepFields } = await supabase
-    .from("step_fields")
-    .select(FIELD_COLUMNS)
-    .in("step_id", stepIds.length ? stepIds : ["-"])
-    .order("position")
-    .returns<StepField[]>();
+  // Opções, vínculos de produto e campos dependem dos stepIds → paralelo.
+  const [{ data: options }, { data: stepProducts }, { data: stepFields }] =
+    await Promise.all([
+      supabase
+        .from("options")
+        .select(OPTION_COLUMNS)
+        .in("step_id", safeIds)
+        .order("position")
+        .returns<Option[]>(),
+      supabase
+        .from("step_products")
+        .select(STEP_PRODUCT_COLUMNS)
+        .in("step_id", safeIds)
+        .returns<StepProduct[]>(),
+      supabase
+        .from("step_fields")
+        .select(FIELD_COLUMNS)
+        .in("step_id", safeIds)
+        .order("position")
+        .returns<StepField[]>(),
+    ]);
 
   const productList = products ?? [];
   const isPublished = journey.status === "published";
