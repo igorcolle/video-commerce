@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   Geist,
   Geist_Mono,
+  JetBrains_Mono,
   Inter,
   Roboto,
   Poppins,
@@ -17,6 +18,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+// Mono do novo design system do admin (tabelas/IDs/links).
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -53,8 +60,15 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${roboto.variable} ${poppins.variable} ${montserrat.variable} ${lato.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} ${inter.variable} ${roboto.variable} ${poppins.variable} ${montserrat.variable} ${lato.variable} h-full antialiased`}
     >
+      <head>
+        {/* Ícones do novo design system do admin (Material Symbols Outlined). */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

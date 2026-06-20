@@ -66,10 +66,12 @@ export default function StepPreviewModal({
           <ResultStep
             step={step}
             products={products}
+            productSpecs={[]}
             journeyName=""
             answers={{}}
             onWhatsapp={noop}
             onBuy={noop}
+            onSpecs={noop}
           />
         )}
       </div>

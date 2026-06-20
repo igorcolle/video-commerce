@@ -253,6 +253,149 @@ body {
   color: var(--success-fg);
 }
 
+/* =====================================================================
+   NOVO DESIGN SYSTEM "QUANTIO" (Material-3 dark, verde #4be277)
+   Usado pelo SHELL do admin (menu superior) e pelas páginas novas
+   (Produtos, Leads). NÃO substitui os tokens --bg/--border/--text acima,
+   que o flow builder e o editor de jornada continuam usando (design
+   do flowbuilder permanece inalterado).
+   ===================================================================== */
+@theme inline {
+  /* Cores semânticas → resolvidas pelas vars --q-* (claro/escuro por escopo). */
+  --color-primary: var(--q-primary);
+  --color-on-primary: var(--q-on-primary);
+  --color-primary-container: var(--q-primary-container);
+  --color-surface: var(--q-surface);
+  --color-surface-container-lowest: var(--q-scl);
+  --color-surface-container-low: var(--q-sc-low);
+  --color-surface-container: var(--q-sc);
+  --color-surface-container-high: var(--q-sc-high);
+  --color-surface-container-highest: var(--q-sc-highest);
+  --color-surface-variant: var(--q-surface-variant);
+  --color-on-surface: var(--q-on-surface);
+  --color-on-surface-variant: var(--q-on-surface-variant);
+  --color-outline: var(--q-outline);
+  --color-outline-variant: var(--q-outline-variant);
+  --color-error: var(--q-error);
+  --color-on-error: var(--q-on-error);
+
+  /* Spacing nomeado do mockup. */
+  --spacing-base: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-gutter: 16px;
+  --spacing-lg: 24px;
+  --spacing-margin: 24px;
+  --spacing-xl: 32px;
+
+  /* Tipografia do mockup. */
+  --text-headline-lg: 24px;
+  --text-headline-lg--line-height: 32px;
+  --text-headline-lg--font-weight: 600;
+  --text-headline-lg--letter-spacing: -0.02em;
+  --text-headline-md: 18px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--font-weight: 600;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--font-weight: 500;
+  --text-label-md--letter-spacing: 0.02em;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 20px;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 18px;
+  --text-mono-sm: 12px;
+  --text-mono-sm--line-height: 16px;
+
+  /* Famílias (todas Geist, exceto mono = JetBrains). */
+  --font-headline-lg: var(--font-geist-sans);
+  --font-headline-md: var(--font-geist-sans);
+  --font-label-md: var(--font-geist-sans);
+  --font-body-md: var(--font-geist-sans);
+  --font-body-sm: var(--font-geist-sans);
+  --font-mono-sm: var(--font-jetbrains-mono);
+}
+
+/* Variante CLARA (derivada — o mockup é dark-first). */
+.admin-theme {
+  --q-primary: #16a34a;
+  --q-on-primary: #ffffff;
+  --q-primary-container: #bbf7d0;
+  --q-surface: #ffffff;
+  --q-scl: #ffffff;
+  --q-sc-low: #f6f7f6;
+  --q-sc: #f1f3f1;
+  --q-sc-high: #e9ece9;
+  --q-sc-highest: #e1e5e1;
+  --q-surface-variant: #e9ece9;
+  --q-on-surface: #1a1d21;
+  --q-on-surface-variant: #5b665f;
+  --q-outline: #8a948c;
+  --q-outline-variant: #d9ded9;
+  --q-error: #dc2626;
+  --q-on-error: #ffffff;
+  --q-grid-dot: #e6e8eb;
+}
+
+/* Variante ESCURA (fiel ao mockup). */
+.admin-theme.dark {
+  --q-primary: #4be277;
+  --q-on-primary: #003915;
+  --q-primary-container: #22c55e;
+  --q-surface: #131313;
+  --q-scl: #0e0e0e;
+  --q-sc-low: #1c1b1b;
+  --q-sc: #201f1f;
+  --q-sc-high: #2a2a2a;
+  --q-sc-highest: #353534;
+  --q-surface-variant: #353534;
+  --q-on-surface: #e5e2e1;
+  --q-on-surface-variant: #b4bdb6;
+  --q-outline: #869585;
+  --q-outline-variant: #3d4a3d;
+  --q-error: #ffb4ab;
+  --q-on-error: #690005;
+  --q-grid-dot: #27272a;
+}
+
+/* Ícones Material Symbols (carregados em app/layout.tsx). */
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fundo "workbench": grade de pontos das páginas novas. */
+.workbench-bg {
+  background-image: radial-gradient(var(--q-grid-dot) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Scrollbar fina do novo design. */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--q-outline-variant);
+  border-radius: 10px;
+}
+
 /* Barra de rolagem minimalista (listas de produtos no player com >4 itens). */
 .scrollbar-thin {
   scrollbar-width: thin;

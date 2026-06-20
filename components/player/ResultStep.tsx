@@ -1,37 +1,56 @@
 "use client";
 
-import type { Step, Product } from "@/lib/supabase";
+import { useState } from "react";
+import type { Step, Product, ProductSpec } from "@/lib/supabase";
 import { buildLeadMessage } from "@/lib/wa";
 import { productCtaButtons, ctaButtonHref } from "@/lib/productButtons";
 import StoryVideo from "./StoryVideo";
+import SpecsModal from "./SpecsModal";
 
 // =====================================================================
 // ResultStep — tela final: vídeo de recomendação + produtos sugeridos
 // com botões de ação configuráveis (WhatsApp / link). É aqui que a
 // conversão acontece. Um CTA geral (configurável) pode aparecer no fim.
+// Botão de especificações por produto.
 // =====================================================================
 
 type Props = {
   step: Step;
   products: Product[];
+  productSpecs: ProductSpec[];
   journeyName: string;
   answers: Record<string, string>;
   onWhatsapp: (productId?: string) => void;
   onBuy: (productId: string) => void;
+  onSpecs: (productId: string) => void;
   onClose?: () => void;
 };
 
 export default function ResultStep({
   step,
   products,
+  productSpecs,
   journeyName,
   answers,
   onWhatsapp,
   onBuy,
+  onSpecs,
   onClose,
 }: Props) {
   // Mais de 4 produtos: a lista rola dentro de uma área com barra minimalista.
   const scroll = products.length > 4;
+
+  // Produto cujas especificações estão abertas no modal.
+  const [specsProduct, setSpecsProduct] = useState<Product | null>(null);
+
+  // Um produto tem specs para mostrar quando está ativado e há resumo ou linhas.
+  function hasSpecs(p: Product): boolean {
+    return (
+      p.specs_enabled &&
+      (Boolean(p.specs_summary) ||
+        productSpecs.some((s) => s.product_id === p.id))
+    );
+  }
 
   // CTA geral configurável (botão de ação no fim da tela).
   const cta = step.result_cta ?? null;
@@ -80,6 +99,23 @@ export default function ResultStep({
               )}
 
               <div className="mt-auto flex flex-col gap-2">
+                {/* Botão de especificações (só quando o produto tem specs). */}
+                {hasSpecs(product) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSpecsProduct(product);
+                      onSpecs(product.id);
+                    }}
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2.5 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      list_alt
+                    </span>
+                    Especificações
+                  </button>
+                )}
+
                 {btns.map((btn, i) => (
                   <a
                     key={i}
@@ -121,6 +157,15 @@ export default function ResultStep({
         >
           {cta.label || (cta.kind === "whatsapp" ? "Falar no WhatsApp" : "Saiba mais")}
         </a>
+      )}
+
+      {/* Modal de especificações (resumo no topo + tabela abaixo). */}
+      {specsProduct && (
+        <SpecsModal
+          product={specsProduct}
+          specs={productSpecs.filter((s) => s.product_id === specsProduct.id)}
+          onClose={() => setSpecsProduct(null)}
+        />
       )}
     </main>
   );

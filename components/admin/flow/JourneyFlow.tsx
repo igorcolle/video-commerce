@@ -32,6 +32,7 @@ import type {
   FieldKind,
   StepType,
   ProductButton,
+  ProductCategory,
 } from "@/lib/supabase";
 import * as flow from "@/app/admin/jornadas/[id]/flow-actions";
 
@@ -40,6 +41,7 @@ type Props = {
   steps: Step[];
   options: Option[];
   products: Product[];
+  categories: ProductCategory[];
   stepProducts: StepProduct[];
   stepFields: StepField[];
 };
@@ -76,6 +78,7 @@ export default function JourneyFlow({
   steps,
   options,
   products,
+  categories,
   stepProducts,
   stepFields,
 }: Props) {
@@ -527,6 +530,7 @@ export default function JourneyFlow({
           fields={selData.fields}
           productIds={selData.productIds}
           products={products}
+          categories={categories}
           isStart={selData.isStart}
           onTitle={(v) => {
             patchStep(selectedNode.id, { title: v });

@@ -24,6 +24,8 @@ export default async function JourneyPage({
       steps={data.steps}
       options={data.options}
       products={data.products}
+      productSpecs={data.productSpecs}
+      productVideos={data.productVideos}
       stepProducts={data.stepProducts}
       stepFields={data.stepFields}
     />

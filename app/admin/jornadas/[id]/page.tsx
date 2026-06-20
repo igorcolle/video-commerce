@@ -6,6 +6,7 @@ import type {
   Step,
   Option,
   Product,
+  ProductCategory,
   StepProduct,
   StepField,
 } from "@/lib/supabase";
@@ -14,24 +15,16 @@ import {
   OPTION_COLUMNS,
   FIELD_COLUMNS,
   PRODUCT_COLUMNS,
+  PRODUCT_CATEGORY_COLUMNS,
   STEP_PRODUCT_COLUMNS,
 } from "@/lib/queries";
 import JourneyFlow from "@/components/admin/flow/JourneyFlow";
 import WidgetPanel from "@/components/admin/WidgetPanel";
-import ProductPhotoUpload from "@/components/admin/ProductPhotoUpload";
-import ProductButtons from "@/components/admin/ProductButtons";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonClasses } from "@/components/ui/Button";
-import { Input, Textarea, Select } from "@/components/ui/Input";
-import {
-  updateJourney,
-  togglePublish,
-  addProduct,
-  updateProduct,
-  duplicateProduct,
-  deleteProduct,
-} from "./actions";
+import { Input, Select } from "@/components/ui/Input";
+import { updateJourney, togglePublish } from "./actions";
 
 function stepLabel(s: Step): string {
   const base = s.title || s.question_text || "Etapa";
@@ -58,20 +51,31 @@ export default async function EditorPage({
 
   if (!journey) notFound();
 
-  // Etapas e produtos só dependem da jornada → buscam em paralelo.
-  const [{ data: steps }, { data: products }] = await Promise.all([
-    supabase
-      .from("steps")
-      .select(STEP_COLUMNS)
-      .eq("journey_id", id)
-      .order("position")
-      .returns<Step[]>(),
-    supabase
-      .from("products")
-      .select(PRODUCT_COLUMNS)
-      .eq("journey_id", id)
-      .returns<Product[]>(),
-  ]);
+  // Etapas (da jornada), produtos e categorias (da BIBLIOTECA da empresa) → em
+  // paralelo. Os produtos vêm na ordem da biblioteca (position) e as categorias
+  // por position, para a aba "Produtos" do bloco agrupar na mesma ordem do admin.
+  const [{ data: steps }, { data: products }, { data: categories }] =
+    await Promise.all([
+      supabase
+        .from("steps")
+        .select(STEP_COLUMNS)
+        .eq("journey_id", id)
+        .order("position")
+        .returns<Step[]>(),
+      supabase
+        .from("products")
+        .select(PRODUCT_COLUMNS)
+        .eq("company_id", journey.company_id)
+        .order("position")
+        .order("name")
+        .returns<Product[]>(),
+      supabase
+        .from("product_categories")
+        .select(PRODUCT_CATEGORY_COLUMNS)
+        .eq("company_id", journey.company_id)
+        .order("position")
+        .returns<ProductCategory[]>(),
+    ]);
 
   const stepList = steps ?? [];
   const stepIds = stepList.map((s) => s.id);
@@ -179,6 +183,7 @@ export default async function EditorPage({
         steps={stepList}
         options={options ?? []}
         products={productList}
+        categories={categories ?? []}
         stepProducts={stepProducts ?? []}
         stepFields={stepFields ?? []}
       />
@@ -220,77 +225,23 @@ export default async function EditorPage({
         </Card>
       </details>
 
-      {/* Produtos da jornada */}
-      <details className="mt-4" open>
-        <summary className="cursor-pointer text-sm font-semibold">
-          Produtos da jornada ({productList.length})
-        </summary>
-        <div className="mt-3 flex flex-col gap-4">
-          {productList.map((p) => (
-            <Card key={p.id} className="p-4">
-              <form action={updateProduct} className="flex flex-col gap-2">
-                <input type="hidden" name="id" value={p.id} />
-                <input type="hidden" name="journey_id" value={journey.id} />
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="ds-label">Nome</span>
-                    <Input name="name" defaultValue={p.name} />
-                  </label>
-                  <ProductPhotoUpload
-                    journeyId={journey.id}
-                    productId={p.id}
-                    initialUrl={p.photo_url}
-                  />
-                  <label className="flex flex-col gap-1.5">
-                    <span className="ds-label">Link</span>
-                    <Input name="buy_link" defaultValue={p.buy_link ?? ""} />
-                  </label>
-                </div>
-                <label className="flex flex-col gap-1.5">
-                  <span className="ds-label">Descrição</span>
-                  <Textarea name="benefits" rows={2} defaultValue={p.benefits ?? ""} />
-                </label>
-                <ProductButtons initial={p.buttons ?? []} />
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" className="w-fit">
-                    Salvar produto
-                  </Button>
-                  <Button
-                    formAction={duplicateProduct}
-                    variant="secondary"
-                    size="sm"
-                    className="w-fit"
-                  >
-                    Duplicar
-                  </Button>
-                  <Button
-                    formAction={deleteProduct}
-                    variant="danger"
-                    size="sm"
-                    className="w-fit"
-                  >
-                    Excluir
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          ))}
-
-          {/* Adicionar produto */}
-          <Card className="p-4">
-            <form action={addProduct} className="flex items-end gap-2">
-              <input type="hidden" name="journey_id" value={journey.id} />
-              <label className="flex flex-1 flex-col gap-1.5">
-                <span className="ds-label">Novo produto</span>
-                <Input name="name" required placeholder="Ex.: STIHL FS 120" />
-              </label>
-              <Button type="submit" variant="secondary" size="sm">
-                + Adicionar
-              </Button>
-            </form>
-          </Card>
+      {/* Biblioteca de produtos: cadastro agora é centralizado em /admin/produtos.
+          Aqui você só escolhe, em cada etapa de resultado, quais produtos da
+          biblioteca aparecem (aba "Produtos" do bloco). */}
+      <Card className="mt-4 flex flex-wrap items-center justify-between gap-3 p-4">
+        <div>
+          <p className="text-sm font-semibold">Produtos da biblioteca</p>
+          <p className="text-sm text-[var(--text-muted)]">
+            Os produtos são reutilizáveis entre jornadas. Cadastre e edite na
+            biblioteca; aqui basta vinculá-los às etapas de resultado.
+            {productList.length > 0 &&
+              ` (${productList.length} disponíveis)`}
+          </p>
         </div>
-      </details>
+        <Link href="/admin/produtos" className={buttonClasses("secondary", "sm")}>
+          Abrir biblioteca de produtos
+        </Link>
+      </Card>
     </main>
   );
 }

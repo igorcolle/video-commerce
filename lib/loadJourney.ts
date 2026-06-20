@@ -4,6 +4,9 @@ import {
   OPTION_COLUMNS,
   FIELD_COLUMNS,
   PRODUCT_COLUMNS,
+  PRODUCT_CATEGORY_COLUMNS,
+  PRODUCT_SPEC_COLUMNS,
+  PRODUCT_VIDEO_COLUMNS,
   STEP_PRODUCT_COLUMNS,
 } from "@/lib/queries";
 import type {
@@ -11,6 +14,9 @@ import type {
   Step,
   Option,
   Product,
+  ProductCategory,
+  ProductSpec,
+  ProductVideo,
   StepProduct,
   StepField,
 } from "@/lib/supabase";
@@ -26,6 +32,8 @@ export type LoadedJourney = {
   steps: Step[];
   options: Option[];
   products: Product[];
+  productSpecs: ProductSpec[];
+  productVideos: ProductVideo[];
   stepProducts: StepProduct[];
   stepFields: StepField[];
 };
@@ -43,20 +51,13 @@ export async function loadJourney(slug: string): Promise<LoadedJourney | null> {
 
   if (!journey) return null;
 
-  // 2) Etapas e produtos só dependem da jornada → buscam em paralelo.
-  const [{ data: steps }, { data: products }] = await Promise.all([
-    supabase
-      .from("steps")
-      .select(STEP_COLUMNS)
-      .eq("journey_id", journey.id)
-      .order("position")
-      .returns<Step[]>(),
-    supabase
-      .from("products")
-      .select(PRODUCT_COLUMNS)
-      .eq("journey_id", journey.id)
-      .returns<Product[]>(),
-  ]);
+  // 2) Etapas da jornada.
+  const { data: steps } = await supabase
+    .from("steps")
+    .select(STEP_COLUMNS)
+    .eq("journey_id", journey.id)
+    .order("position")
+    .returns<Step[]>();
 
   const stepIds = (steps ?? []).map((s) => s.id);
   const safeIds = stepIds.length
@@ -86,11 +87,64 @@ export async function loadJourney(slug: string): Promise<LoadedJourney | null> {
         .returns<StepField[]>(),
     ]);
 
+  // 4) Produtos: agora vêm da BIBLIOTECA (company-scoped), então carregamos
+  //    pelos ids vinculados às etapas (step_products), não por journey_id.
+  const productIds = Array.from(
+    new Set((stepProducts ?? []).map((sp) => sp.product_id))
+  );
+  const safeProductIds = productIds.length
+    ? productIds
+    : ["00000000-0000-0000-0000-000000000000"];
+  // 5) Produtos + suas especificações e vídeos/destaques + categorias (paralelo).
+  const [
+    { data: products },
+    { data: productSpecs },
+    { data: productVideos },
+    { data: categories },
+  ] = await Promise.all([
+    supabase
+      .from("products")
+      .select(PRODUCT_COLUMNS)
+      .in("id", safeProductIds)
+      .returns<Product[]>(),
+    supabase
+      .from("product_specs")
+      .select(PRODUCT_SPEC_COLUMNS)
+      .in("product_id", safeProductIds)
+      .order("position")
+      .returns<ProductSpec[]>(),
+    supabase
+      .from("product_videos")
+      .select(PRODUCT_VIDEO_COLUMNS)
+      .in("product_id", safeProductIds)
+      .order("position")
+      .returns<ProductVideo[]>(),
+    supabase
+      .from("product_categories")
+      .select(PRODUCT_CATEGORY_COLUMNS)
+      .eq("company_id", journey.company_id)
+      .returns<ProductCategory[]>(),
+  ]);
+
+  // Ordena os produtos pela ORDEM DA BIBLIOTECA: posição da categoria e, dentro
+  // dela, posição do produto (mesma ordem definida no admin de Produtos).
+  const catPos = new Map<string, number>(
+    (categories ?? []).map((c) => [c.id, c.position])
+  );
+  const orderedProducts = [...(products ?? [])].sort((a, b) => {
+    const ca = a.category_id ? catPos.get(a.category_id) ?? 9999 : 9999;
+    const cb = b.category_id ? catPos.get(b.category_id) ?? 9999 : 9999;
+    if (ca !== cb) return ca - cb;
+    return a.position - b.position;
+  });
+
   return {
     journey,
     steps: steps ?? [],
     options: options ?? [],
-    products: products ?? [],
+    products: orderedProducts,
+    productSpecs: productSpecs ?? [],
+    productVideos: productVideos ?? [],
     stepProducts: stepProducts ?? [],
     stepFields: stepFields ?? [],
   };

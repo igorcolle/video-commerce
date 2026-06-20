@@ -8,6 +8,8 @@ import type {
   Step,
   Option,
   Product,
+  ProductSpec,
+  ProductVideo,
   StepProduct,
   StepField,
   EventType,
@@ -30,6 +32,8 @@ type Props = {
   steps: Step[];
   options: Option[];
   products: Product[];
+  productSpecs: ProductSpec[];
+  productVideos: ProductVideo[];
   stepProducts: StepProduct[];
   stepFields: StepField[];
   // Quando true, mostra o botão de fechar (X) que recolhe o widget no site host.
@@ -41,6 +45,7 @@ export default function Player({
   steps,
   options,
   products,
+  productSpecs,
   stepProducts,
   stepFields,
   embed = false,
@@ -240,16 +245,20 @@ export default function Player({
   }
 
   if (currentStep.type === "result") {
-    const resultProducts = stepProducts
-      .filter((sp) => sp.step_id === currentStep.id)
-      .sort((a, b) => a.position - b.position)
-      .map((sp) => products.find((p) => p.id === sp.product_id))
-      .filter((p): p is Product => Boolean(p));
+    // Ordem dos produtos = ordem da biblioteca (o array `products` já vem
+    // ordenado por categoria/posição em loadJourney); filtramos os vinculados.
+    const resultIds = new Set(
+      stepProducts
+        .filter((sp) => sp.step_id === currentStep.id)
+        .map((sp) => sp.product_id)
+    );
+    const resultProducts = products.filter((p) => resultIds.has(p.id));
 
     return (
       <ResultStep
         step={currentStep}
         products={resultProducts}
+        productSpecs={productSpecs}
         journeyName={journey.name}
         answers={answers}
         onClose={handleClose}
@@ -265,6 +274,12 @@ export default function Player({
             metadata: { product_id: productId },
           })
         }
+        onSpecs={(productId) =>
+          sendEvent("view_specs", {
+            step_id: currentStep.id,
+            metadata: { product_id: productId },
+          })
+        }
       />
     );
   }
@@ -274,12 +289,14 @@ export default function Player({
     .filter((o) => o.step_id === currentStep.id)
     .sort((a, b) => a.position - b.position);
 
-  // Produtos vinculados a esta etapa de pergunta (alimentam o carrinho).
-  const stepCartProducts = stepProducts
-    .filter((sp) => sp.step_id === currentStep.id)
-    .sort((a, b) => a.position - b.position)
-    .map((sp) => products.find((p) => p.id === sp.product_id))
-    .filter((p): p is Product => Boolean(p));
+  // Produtos vinculados a esta etapa de pergunta (alimentam o carrinho),
+  // na ordem da biblioteca (array `products` já ordenado em loadJourney).
+  const cartIds = new Set(
+    stepProducts
+      .filter((sp) => sp.step_id === currentStep.id)
+      .map((sp) => sp.product_id)
+  );
+  const stepCartProducts = products.filter((p) => cartIds.has(p.id));
 
   // Pré-carrega os vídeos das PRÓXIMAS etapas (destinos dos botões), mas só
   // DEPOIS que o vídeo atual já bufferizou (readyStepId), para que a troca fique

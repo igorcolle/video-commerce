@@ -18,6 +18,8 @@ const VALID_EVENTS: EventType[] = [
   "click_whatsapp",
   "click_buy",
   "complete",
+  "view_specs",
+  "click_highlight",
 ];
 
 export async function POST(request: Request) {

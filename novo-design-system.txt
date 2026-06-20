@@ -1,0 +1,2824 @@
+<!-- Gerenciamento de Produtos - Aba Vídeos (Formato Stories e Ordenação) -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Produtos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex overflow-hidden">
+<!-- Side Navigation Shell -->
+<aside class="hidden lg:flex flex-col h-screen py-md space-y-base bg-surface-container-lowest border-r border-outline-variant w-64 shrink-0">
+<div class="px-md mb-xl">
+<h1 class="font-headline-lg text-headline-lg font-black text-primary uppercase">quantio video</h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Online com experiência real</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 mx-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">account_tree</span>
+<span class="font-label-md text-label-md">Jornadas</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 bg-secondary-container text-on-secondary-container rounded-lg group scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+<span class="font-label-md text-label-md font-bold">Produtos</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all rounded-lg group" href="#"><span class="material-symbols-outlined mr-3">group</span>
+<span class="font-label-md text-label-md">Leads</span></a>
+<a class="flex items-center px-4 py-3 mx-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">monitoring</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 mx-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant transition-all rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-md text-label-md">Configurações</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-3 bg-white text-black font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-md">Nova Jornada</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background h-screen relative">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full px-lg h-14 bg-background border-b border-outline-variant shrink-0 z-10">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-on-background">Video Commerce</span>
+<div class="h-4 w-px bg-outline-variant"></div>
+<nav class="flex gap-4">
+<a class="font-label-md text-label-md text-primary font-bold border-b-2 border-primary" href="#">Inventário</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Ver Player</button>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined">light_mode</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Perfil do usuário" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI">
+</div>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Produtos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Gerencie com eficiência os produtos das suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-sm w-64 focus:border-primary transition-colors outline-none" placeholder="Buscar produtos..." type="text">
+</div>
+<button class="px-lg py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="font-label-md">ADICIONAR PRODUTO</span>
+</button>
+</div>
+</div>
+<!-- Folders/Categories -->
+<div class="space-y-4">
+<!-- Folder: Roçadeiras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm" open="">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Roçadeiras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- FS 55 -->
+<tr class="table-row-selected hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 55" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYg20HostXybKX-xIElarvBnsTQyT0rSjkHOA_Y1H_xVrdNYjnV_Fmr0vetxTmNAcK1-cfsGP19EqaAjy0Kc-8VDc7FB0YLNBh3jKpOSSVdPWznRS_5lG6-vWojX1akRdDP9YxPt13H44NOgtUq6QYEFDss_lbDA5TbY38H5Vdrowv2ISvdsPhARH4_p7NcSnXGbfs89lHUWp-Hqo8FgRlw8hFLk4e3YyCvbu9vs3EJ-ATetUObOgLf7Kjc8uKd2tAZgqS0LOHn30">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 55</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5501</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> PUBLICADA
+                            </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs55...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors" title="Duplicar"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- FS 80 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 80" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYOgijL6uY189r5YCZAu1uaogGR57F5X8HE0rxHONEN6vQeEIhgVoNoVYOTA_-SKCu57uthBU4EZuGf93-tJqTO5Db-Yvgu3_OP4Klm5yv2dMG1RH77FV_a4hhrwhNor32Ox550q-pgt4n5S7AlBbStuk3tMREQt42AwM5K1Tr7QZnXH23nENZnQ58WisVFR63LCdlbUyYlCVOXoTr_JyotWo-8uah2UkoKR6RCY8V2lWhgp8Nt5CyLIzYEUb-kiiOLE6aGLkRdQY">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 80</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5580</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-variant text-on-surface-variant font-label-md text-[10px] rounded border border-outline-variant uppercase">Rascunho</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">arvoretamaquinas...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- FS 85 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 85" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0CyyFVkZdQiZCaMlwuVkFq5zlPmRPxH7Qi07Ra1seUZS8BacRSI9NH3WKwYdyIB_ItQdMqfgkvi_QLXpdGUatDJsq082CFrZ9b23cWdkCdgnaTgNQTjHmRfuxk-E8MO6ToF2sWIR_gISoCj1Vh3TL9NN3w7rNoYSaS1aCBg8XD8MdyOUPv998dcgYGJIFeYMSoR7q1hIgrbCsYEJMxbi3Qy2kx6kieoGiIs87PokyHI0ksvW6ChUaj5jPWaIzZkFeCZdx0Li_gxw">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 85</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5585</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-container/20 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">Ativo</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs85...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+<!-- Folder: Motosserras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Motosserras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- MS 170 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 170</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-1700</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-container/20 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">Ativo</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms170...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- MS 180 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 180</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-1800</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> PUBLICADA
+                            </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms180...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- MS 250 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 250</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-2500</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-variant text-on-surface-variant font-label-md text-[10px] rounded border border-outline-variant uppercase">Rascunho</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms250...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+<!-- Detail Editor -->
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" id="edit-modal">
+<div class="w-full bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 max-w-7xl">
+<!-- Modal Header -->
+<div class="px-lg py-3 bg-surface-container-high flex justify-between items-center border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="font-label-md font-bold text-primary">EDITANDO: STIHL FS 55</span>
+<span class="text-on-surface-variant opacity-50 font-mono-sm text-[11px]">#INV-5501</span>
+</div>
+<button class="p-1 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="flex flex-col h-full">
+<!-- Tab Navigation -->
+<div class="px-lg border-b border-outline-variant bg-surface-container-low flex gap-lg"><button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Dados do produto</button><button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Especificações</button><button class="py-4 font-label-md text-label-md text-primary border-b-2 border-primary transition-colors">Videos</button><div class="ml-auto flex items-center gap-2 pr-2"><button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all" title="Ver no Player"><span class="material-symbols-outlined text-[20px]">play_arrow</span></button><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-lg transition-all" title="Duplicar"><span class="material-symbols-outlined text-[20px]">content_copy</span></button><button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" title="Excluir"><span class="material-symbols-outlined text-[20px]">delete</span></button></div></div>
+<!-- Tab Content Container -->
+<div class="p-lg overflow-y-auto custom-scrollbar" style="max-height: 70vh;"><div class="space-y-lg animate-in fade-in duration-300"><div class="flex justify-between items-center pb-4 border-b border-outline-variant/30"><h3 class="font-headline-md text-on-surface">Gerenciamento de Vídeos</h3><div class="flex items-center gap-lg ml-auto"><button class="px-4 py-2 bg-primary/10 text-primary border border-primary/20 font-label-md rounded-lg hover:bg-primary/20 transition-all flex items-center gap-2"><span class="material-symbols-outlined text-[20px]">upload</span>ADICIONAR VÍDEO</button><div class="flex items-center gap-3"><span class="font-label-md text-on-surface-variant">Ativar</span><button class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-primary transition-colors focus:outline-none" role="switch" aria-checked="true"><span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span></button></div></div></div><div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-md"><div class="group relative bg-surface-container-lowest border-2 border-primary rounded-xl overflow-hidden transition-all"><div class="aspect-[9/16] bg-black flex items-center justify-center relative"><span class="material-symbols-outlined text-on-surface-variant/20 text-[48px]">play_circle</span><div class="absolute top-2 left-2 px-2 py-1 bg-primary text-on-primary text-[10px] font-bold rounded uppercase">Principal</div><div class="absolute top-2 right-2 flex gap-1 z-10"><button class="p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors flex items-center justify-center" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button><button class="p-1.5 bg-black/40 hover:bg-error/60 text-white rounded-full transition-colors flex items-center justify-center" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></div><div class="p-3 space-y-2"><div class="font-label-md text-on-surface truncate">Apresentação STIHL FS 55</div><label class="flex items-center gap-2 cursor-pointer"><input checked="" class="w-4 h-4 text-primary bg-surface-container border-outline-variant focus:ring-primary focus:ring-offset-0" name="main_video" type="radio"><span class="text-body-sm text-on-surface-variant">Vídeo Principal</span></label></div><div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Reordenar"><span class="material-symbols-outlined text-[18px]">drag_indicator</span></button><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1.5 bg-black/60 hover:bg-error/20 text-on-surface hover:text-error rounded-lg backdrop-blur-sm transition-all" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></div><div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-all"><div class="aspect-[9/16] bg-black flex items-center justify-center relative"><span class="material-symbols-outlined text-on-surface-variant/20 text-[48px]">play_circle</span><div class="absolute top-2 right-2 flex gap-1 z-10"><button class="p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors flex items-center justify-center" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button><button class="p-1.5 bg-black/40 hover:bg-error/60 text-white rounded-full transition-colors flex items-center justify-center" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></div><div class="p-3 space-y-2"><div class="font-label-md text-on-surface truncate">Demonstração de Uso em Campo</div><label class="flex items-center gap-2 cursor-pointer"><input class="w-4 h-4 text-primary bg-surface-container border-outline-variant focus:ring-primary focus:ring-offset-0" name="main_video" type="radio"><span class="text-body-sm text-on-surface-variant">Vídeo Principal</span></label></div><div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Reordenar"><span class="material-symbols-outlined text-[18px]">drag_indicator</span></button><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1.5 bg-black/60 hover:bg-error/20 text-on-surface hover:text-error rounded-lg backdrop-blur-sm transition-all" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></div><div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-all"><div class="aspect-[9/16] bg-black flex items-center justify-center relative"><span class="material-symbols-outlined text-on-surface-variant/20 text-[48px]">play_circle</span><div class="absolute top-2 right-2 flex gap-1 z-10"><button class="p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors flex items-center justify-center" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button><button class="p-1.5 bg-black/40 hover:bg-error/60 text-white rounded-full transition-colors flex items-center justify-center" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></div><div class="p-3 space-y-2"><div class="font-label-md text-on-surface truncate">Manutenção e Limpeza</div><label class="flex items-center gap-2 cursor-pointer"><input class="w-4 h-4 text-primary bg-surface-container border-outline-variant focus:ring-primary focus:ring-offset-0" name="main_video" type="radio"><span class="text-body-sm text-on-surface-variant">Vídeo Principal</span></label></div><div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Reordenar"><span class="material-symbols-outlined text-[18px]">drag_indicator</span></button><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1.5 bg-black/60 hover:bg-error/20 text-on-surface hover:text-error rounded-lg backdrop-blur-sm transition-all" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></div><div class="group relative bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden hover:border-primary/50 transition-all"><div class="aspect-[9/16] bg-black flex items-center justify-center relative"><span class="material-symbols-outlined text-on-surface-variant/20 text-[48px]">play_circle</span><div class="absolute top-2 right-2 flex gap-1 z-10"><button class="p-1.5 bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors flex items-center justify-center" title="Editar"><span class="material-symbols-outlined text-[16px]">edit</span></button><button class="p-1.5 bg-black/40 hover:bg-error/60 text-white rounded-full transition-colors flex items-center justify-center" title="Excluir"><span class="material-symbols-outlined text-[16px]">delete</span></button></div></div><div class="p-3 space-y-2"><div class="font-label-md text-on-surface truncate">Vídeo Adicional 1</div><label class="flex items-center gap-2 cursor-pointer"><input class="w-4 h-4 text-primary bg-surface-container border-outline-variant focus:ring-primary focus:ring-offset-0" name="main_video" type="radio"><span class="text-body-sm text-on-surface-variant">Vídeo Principal</span></label></div><div class="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Reordenar"><span class="material-symbols-outlined text-[18px]">drag_indicator</span></button><button class="p-1.5 bg-black/60 hover:bg-primary/20 text-on-surface rounded-lg backdrop-blur-sm transition-all" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="p-1.5 bg-black/60 hover:bg-error/20 text-on-surface hover:text-error rounded-lg backdrop-blur-sm transition-all" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></div></div><div class="pt-4 flex gap-3 border-t border-outline-variant/30"><button class="px-8 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all">Salvar Alterações</button><button class="px-6 py-2 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">Descartar</button></div></div></div>
+</div>
+</div>
+</div></main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.2';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            // Prevent interaction if clicking buttons
+            if (e.target.closest('button')) return;
+            
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+            
+            // Simulation of updating the edit panel title
+            const name = row.querySelector('.font-bold').innerText;
+            const id = row.querySelector('.font-mono-sm').innerText;
+            document.querySelector('.font-label-md.font-bold.text-primary').innerText = `EDITANDO: ${name}`;
+            document.querySelector('.text-on-surface-variant.opacity-50.font-mono-sm').innerText = id;
+        });
+    });
+</script><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;"></canvas><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;"></canvas><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas>
+
+
+
+
+</body></html>
+
+<!-- Gerenciamento de Produtos - Especificações com Top Nav -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Produtos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex overflow-hidden flex-col">
+<!-- Side Navigation Shell -->
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background h-screen relative">
+<!-- Top Navigation Bar -->
+<header class="h-16 bg-surface-container-lowest border-b border-outline-variant flex items-center px-lg shrink-0 z-20">
+<div class="flex items-center gap-12 w-full">
+<!-- Brand -->
+<div class="flex flex-col leading-tight">
+<h1 class="font-headline-md text-primary font-black uppercase tracking-tight">QUANTIO VIDEO</h1>
+<span class="text-[9px] text-on-surface-variant font-bold tracking-[0.2em] uppercase opacity-60">Digital Experience</span>
+</div>
+<!-- Navigation -->
+<nav class="flex items-center gap-2">
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Jornadas</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-primary bg-primary/10 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Produtos</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Leads</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">monitoring</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Ajustes</span>
+</a>
+</nav>
+<!-- Right Actions -->
+<div class="ml-auto flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">light_mode</span>
+</button>
+<div class="flex items-center gap-2 pl-4 border-l border-outline-variant">
+<div class="bg-surface-container-high p-1 pr-4 rounded-full flex items-center gap-3 border border-outline-variant">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI">
+</div>
+<span class="font-label-md font-bold uppercase tracking-wider text-on-surface">ADM</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Produtos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Gerencie com eficiência os produtos das suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-sm w-64 focus:border-primary transition-colors outline-none" placeholder="Buscar produtos..." type="text">
+</div>
+<button class="px-lg py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="font-label-md">ADICIONAR PRODUTO</span>
+</button>
+</div>
+</div>
+<!-- Folders/Categories -->
+<div class="space-y-4">
+<!-- Folder: Roçadeiras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm" open="">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Roçadeiras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- FS 55 -->
+<tr class="table-row-selected hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 55" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYg20HostXybKX-xIElarvBnsTQyT0rSjkHOA_Y1H_xVrdNYjnV_Fmr0vetxTmNAcK1-cfsGP19EqaAjy0Kc-8VDc7FB0YLNBh3jKpOSSVdPWznRS_5lG6-vWojX1akRdDP9YxPt13H44NOgtUq6QYEFDss_lbDA5TbY38H5Vdrowv2ISvdsPhARH4_p7NcSnXGbfs89lHUWp-Hqo8FgRlw8hFLk4e3YyCvbu9vs3EJ-ATetUObOgLf7Kjc8uKd2tAZgqS0LOHn30">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 55</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5501</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> PUBLICADA
+                            </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs55...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors" title="Duplicar"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- FS 80 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 80" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYOgijL6uY189r5YCZAu1uaogGR57F5X8HE0rxHONEN6vQeEIhgVoNoVYOTA_-SKCu57uthBU4EZuGf93-tJqTO5Db-Yvgu3_OP4Klm5yv2dMG1RH77FV_a4hhrwhNor32Ox550q-pgt4n5S7AlBbStuk3tMREQt42AwM5K1Tr7QZnXH23nENZnQ58WisVFR63LCdlbUyYlCVOXoTr_JyotWo-8uah2UkoKR6RCY8V2lWhgp8Nt5CyLIzYEUb-kiiOLE6aGLkRdQY">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 80</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5580</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-variant text-on-surface-variant font-label-md text-[10px] rounded border border-outline-variant uppercase">Rascunho</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">arvoretamaquinas...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- FS 85 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 85" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0CyyFVkZdQiZCaMlwuVkFq5zlPmRPxH7Qi07Ra1seUZS8BacRSI9NH3WKwYdyIB_ItQdMqfgkvi_QLXpdGUatDJsq082CFrZ9b23cWdkCdgnaTgNQTjHmRfuxk-E8MO6ToF2sWIR_gISoCj1Vh3TL9NN3w7rNoYSaS1aCBg8XD8MdyOUPv998dcgYGJIFeYMSoR7q1hIgrbCsYEJMxbi3Qy2kx6kieoGiIs87PokyHI0ksvW6ChUaj5jPWaIzZkFeCZdx0Li_gxw">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 85</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5585</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-container/20 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">Ativo</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs85...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+<!-- Folder: Motosserras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Motosserras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- MS 170 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 170</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-1700</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-container/20 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">Ativo</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms170...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- MS 180 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 180</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-1800</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> PUBLICADA
+                            </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms180...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- MS 250 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 250</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-2500</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-variant text-on-surface-variant font-label-md text-[10px] rounded border border-outline-variant uppercase">Rascunho</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms250...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+<!-- Detail Editor -->
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" id="edit-modal">
+<div class="w-full bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 max-w-7xl">
+<!-- Modal Header -->
+<div class="px-lg py-3 bg-surface-container-high flex justify-between items-center border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="font-label-md font-bold text-primary">EDITANDO: STIHL FS 55</span>
+<span class="text-on-surface-variant opacity-50 font-mono-sm text-[11px]">#INV-5501</span>
+</div>
+<button class="p-1 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="flex flex-col h-full">
+<!-- Tab Navigation -->
+<div class="px-lg border-b border-outline-variant bg-surface-container-low flex gap-lg"><button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Dados do produto</button><button class="py-4 font-label-md text-label-md text-primary border-b-2 border-primary transition-colors">Especificações</button><button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Videos</button><div class="ml-auto flex items-center gap-2 pr-2"><button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all" title="Ver no Player"><span class="material-symbols-outlined text-[20px]">play_arrow</span></button><button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-lg transition-all" title="Duplicar"><span class="material-symbols-outlined text-[20px]">content_copy</span></button><button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" title="Excluir"><span class="material-symbols-outlined text-[20px]">delete</span></button></div></div>
+<!-- Tab Content Container -->
+<div class="p-lg overflow-y-auto custom-scrollbar" style="max-height: 70vh;"><div class="space-y-lg animate-in fade-in duration-300">
+<!-- Header with Minimal Switch -->
+<div class="flex justify-between items-center pb-4 border-b border-outline-variant/30">
+<h3 class="font-headline-md text-on-surface">Especificações</h3>
+<div class="flex items-center gap-3">
+<span class="font-label-md text-on-surface-variant opacity-70">Ativar</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value="">
+<div class="w-10 h-5 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<!-- Two Column Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+<!-- Column 1: Description -->
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Resumo das Especificações e Atributos</label>
+<textarea class="w-full h-[200px] bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:border-primary focus:ring-0 outline-none transition-colors resize-none" placeholder="Ex: Detalhes técnicos sobre o motor e ergonomia..." rows="3"></textarea>
+<p class="text-[11px] text-on-surface-variant opacity-50">Habilite para exibir detalhes técnicos na página do produto.</p>
+</div>
+<!-- Column 2: Attributes Table -->
+<div class="space-y-sm">
+<div class="flex justify-between items-center">
+<label class="block font-label-md text-label-md text-on-surface-variant">Tabela de Atributos</label>
+<button class="text-primary font-label-md flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[16px]">add</span>Adicionar Linha
+        </button>
+</div>
+<div class="border border-outline-variant rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-4 py-2 font-label-md text-on-surface-variant uppercase text-[10px]">Atributo</th>
+<th class="px-4 py-2 font-label-md text-on-surface-variant uppercase text-[10px]">Valor</th>
+<th class="w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30 bg-surface-container-lowest">
+<tr>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="Cilindrada"></td>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="27,2 cm³"></td>
+<td class="px-2"><button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button></td>
+</tr>
+<tr>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="Potência"></td>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="0,75/1,0 kW/cv"></td>
+<td class="px-2"><button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button></td>
+</tr>
+<tr>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="Peso"></td>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="5,1 kg"></td>
+<td class="px-2"><button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button></td>
+</tr>
+<tr>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="Capacidade do Tanque"></td>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="0,33 L"></td>
+<td class="px-2"><button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button></td>
+</tr>
+<tr class="">
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="Nível de Vibração"></td>
+<td class="px-4 py-2"><input class="w-full bg-transparent border-none focus:ring-0 p-0 text-body-sm text-on-surface" type="text" value="6,8 / 6,8 m/s²"></td>
+<td class="px-2"><button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button></td>
+</tr></tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="pt-4 flex gap-3 border-t border-outline-variant/30">
+<button class="px-8 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all">Salvar Alterações</button>
+<button class="px-6 py-2 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">Descartar</button>
+</div>
+</div></div>
+</div>
+</div>
+</div></main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.2';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            // Prevent interaction if clicking buttons
+            if (e.target.closest('button')) return;
+            
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+            
+            // Simulation of updating the edit panel title
+            const name = row.querySelector('.font-bold').innerText;
+            const id = row.querySelector('.font-mono-sm').innerText;
+            document.querySelector('.font-label-md.font-bold.text-primary').innerText = `EDITANDO: ${name}`;
+            document.querySelector('.text-on-surface-variant.opacity-50.font-mono-sm').innerText = id;
+        });
+    });
+</script><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas><canvas height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.2;" width="1280"></canvas>
+</body></html>
+
+<!-- Design System -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Produtos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex flex-col overflow-hidden">
+<!-- Main Header Navigation -->
+<header class="fixed top-0 left-0 right-0 h-14 bg-surface-container-lowest border-b border-outline-variant z-50 flex items-center px-lg justify-between"><div class="flex items-center gap-xl shrink-0">
+  <div class="flex flex-col leading-none">
+    <h1 class="font-headline-md text-primary font-black uppercase tracking-tight">quantio video</h1>
+    <span class="text-[10px] text-on-surface-variant/60 uppercase tracking-widest font-medium">digital experience</span>
+  </div>
+  <nav class="hidden lg:flex items-center gap-2">
+    <a class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:text-on-surface transition-all rounded-lg" href="#">
+      <span class="material-symbols-outlined text-[18px]">account_tree</span>
+      <span class="font-label-md uppercase">Jornadas</span>
+    </a>
+    <a class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:text-on-surface transition-all rounded-lg" href="#">
+      <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+      <span class="font-label-md uppercase">Produtos</span>
+    </a>
+    <a class="flex items-center gap-2 px-3 py-1.5 bg-primary-container/20 text-primary border border-primary/20 rounded-lg" href="#">
+      <span class="material-symbols-outlined text-[18px]">group</span>
+      <span class="font-label-md uppercase font-bold">Leads</span>
+    </a>
+    <a class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:text-on-surface transition-all rounded-lg" href="#">
+      <span class="material-symbols-outlined text-[18px]">monitoring</span>
+      <span class="font-label-md uppercase">Analytics</span>
+    </a>
+    <a class="flex items-center gap-2 px-3 py-1.5 text-on-surface-variant hover:text-on-surface transition-all rounded-lg" href="#">
+      <span class="material-symbols-outlined text-[18px]">settings</span>
+      <span class="font-label-md uppercase">Ajustes</span>
+    </a>
+  </nav>
+</div>
+<div class="flex items-center gap-md">
+  <div class="h-6 w-px bg-outline-variant/30 mx-2"></div>
+  <div class="flex items-center gap-3">
+    <button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg">
+      <span class="material-symbols-outlined text-[20px]">light_mode</span>
+    </button>
+    <div class="flex items-center gap-2 bg-surface-container-high/50 p-1 pr-4 rounded-full border border-outline-variant/30">
+      <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI" alt="User">
+      </div>
+      <span class="font-label-md font-bold text-on-surface-variant">ADM</span>
+    </div>
+  </div>
+</div></header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background h-screen pt-14">
+<!-- Sub-header for context -->
+<div class="flex justify-between items-center w-full px-lg h-12 bg-background border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-on-surface-variant uppercase tracking-widest opacity-60">Ambiente de Trabalho</span>
+<div class="h-4 w-px bg-outline-variant"></div>
+<span class="font-label-md text-on-background font-medium">Video Commerce / Produtos</span>
+</div>
+</div>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between mb-lg items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Produtos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Gerencie com eficiência os produtos das suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex items-center gap-2">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] group-focus-within:text-primary transition-colors">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full pl-9 pr-4 py-1.5 text-body-sm w-48 focus:w-64 focus:border-primary transition-all outline-none" placeholder="Buscar..." type="text">
+</div>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<button class="p-2 text-on-surface hover:bg-surface-variant rounded-lg transition-all flex items-center gap-2 group" title="Nova Categoria">
+<span class="material-symbols-outlined text-[20px]">create_new_folder</span>
+<span class="font-label-md hidden xl:block">Categoria</span>
+</button>
+<button class="px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="font-label-md hidden xl:block">Produto</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Folders/Categories -->
+<div class="space-y-4">
+<!-- Folder: Roçadeiras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm" open="">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Roçadeiras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- FS 55 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row table-row-selected">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 55" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYg20HostXybKX-xIElarvBnsTQyT0rSjkHOA_Y1H_xVrdNYjnV_Fmr0vetxTmNAcK1-cfsGP19EqaAjy0Kc-8VDc7FB0YLNBh3jKpOSSVdPWznRS_5lG6-vWojX1akRdDP9YxPt13H44NOgtUq6QYEFDss_lbDA5TbY38H5Vdrowv2ISvdsPhARH4_p7NcSnXGbfs89lHUWp-Hqo8FgRlw8hFLk4e3YyCvbu9vs3EJ-ATetUObOgLf7Kjc8uKd2tAZgqS0LOHn30">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 55</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5501</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> PUBLICADA
+                                        </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs55...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-all hover:scale-110" title="Visualizar"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">play_arrow</span></button>
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors" title="Duplicar"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Other rows... -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 80" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYOgijL6uY189r5YCZAu1uaogGR57F5X8HE0rxHONEN6vQeEIhgVoNoVYOTA_-SKCu57uthBU4EZuGf93-tJqTO5Db-Yvgu3_OP4Klm5yv2dMG1RH77FV_a4hhrwhNor32Ox550q-pgt4n5S7AlBbStuk3tMREQt42AwM5K1Tr7QZnXH23nENZnQ58WisVFR63LCdlbUyYlCVOXoTr_JyotWo-8uah2UkoKR6RCY8V2lWhgp8Nt5CyLIzYEUb-kiiOLE6aGLkRdQY">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 80</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5580</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-variant text-on-surface-variant font-label-md text-[10px] rounded border border-outline-variant uppercase">Rascunho</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">arvoretamaquinas...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-all hover:scale-110" title="Visualizar"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">play_arrow</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+<!-- Folder: Motosserras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Motosserras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/40">image</span>
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL MS 170</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #MS-1700</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-container/20 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">Ativo</span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/ms170...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-all hover:scale-110" title="Visualizar"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">play_arrow</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary rounded transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface rounded transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-error rounded transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+</main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.15';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+        });
+    });
+</script><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15;"></canvas>
+
+
+</body></html>
+
+<!-- Gerenciamento - Menu Superior Minimalista -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Leads</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        .glass-header {
+            background-color: rgba(19, 19, 19, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(134, 149, 133, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+<!-- Superior Navigation Header -->
+<header class="glass-header sticky top-0 w-full px-lg h-16 flex items-center justify-between z-50">
+<div class="flex items-center gap-xl">
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md font-black text-primary uppercase tracking-tighter leading-none">quantio video</h1>
+<p class="font-label-md text-[9px] text-on-surface-variant opacity-70 uppercase tracking-widest">Digital Experience</p>
+</div>
+<nav class="hidden lg:flex items-center gap-1">
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">account_tree</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Jornadas</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">inventory_2</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Produtos</span>
+</a>
+<a class="flex items-center px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">group</span>
+<span class="font-label-md text-[11px] font-bold uppercase tracking-wider">Leads</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">monitoring</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">analytics</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">settings</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">light_mode</span>
+</button>
+<div class="flex items-center gap-3 bg-surface-container-high/40 border border-outline-variant/30 py-1 pl-1 pr-3 rounded-full">
+<div class="w-7 h-7 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Perfil do usuário" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI">
+</div>
+<span class="font-label-md text-[11px] text-on-surface-variant">ADM</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
+<!-- Secondary Toolbar -->
+<div class="w-full px-lg h-12 bg-surface-container-lowest border-b border-outline-variant/30 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-[11px] font-bold text-on-background uppercase tracking-widest opacity-50">Video Commerce</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<span class="font-label-md text-[11px] text-on-surface uppercase tracking-widest">Painel de Leads</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px] group-focus-within:text-primary transition-colors">search</span>
+<input class="bg-transparent border-none rounded-md pl-9 pr-4 py-1 text-[11px] w-32 focus:w-48 focus:bg-surface-variant/30 transition-all outline-none" placeholder="PESQUISAR LEADS..." type="text">
+</div>
+</div>
+</div>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between mb-lg items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Leads</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Acompanhe as oportunidades geradas pelas suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex items-center gap-2">
+<button class="px-3 py-2 text-on-surface bg-surface-container-high border border-outline-variant rounded-lg transition-all flex items-center gap-2 group" title="Exportar CSV">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="font-label-md uppercase text-[10px]">Exportar</span>
+</button>
+<button class="px-4 py-2 bg-surface-container-high border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span class="font-label-md uppercase text-[10px]">Filtrar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Leads Data Table -->
+<div class="flex items-center gap-1 mb-4 border-b border-outline-variant/30">
+<button class="px-4 py-2 font-label-md text-[11px] uppercase tracking-wider text-primary border-b-2 border-primary transition-all">
+    Novos Leads
+  </button>
+<button class="px-4 py-2 font-label-md text-[11px] uppercase tracking-wider text-on-surface-variant hover:text-on-surface transition-all">
+    Histórico de Leads
+  </button>
+</div><div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Email</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Telefone</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Jornada ou produto de Origem</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Data</th>
+<th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Lead 1: New -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Ricardo Oliveira</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8821</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">ricardo.oliver@gmail.com</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(11) 98872-4412</span>
+</td>
+<td class="px-md py-3"><div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">account_tree</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">Escolha sua Roçadeira STIHL</span>
+</div></td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">12/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"><br></span> Novo
+</span>
+</td>
+
+</tr>
+<!-- Lead 2: Contacted -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Fernanda Santos</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8819</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">f.santos.agro@outlook.com</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(41) 99122-8001</span>
+</td>
+<td class="px-md py-3"><div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">inventory_2</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">STIHL FS 55</span>
+</div></td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">11/05/2024</span>
+</td>
+<td class="px-md py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 text-yellow-500 font-label-md text-[10px] rounded border border-yellow-500/20 uppercase"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Com Histórico</span></td>
+
+</tr>
+<!-- Lead 3: Converted -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row table-row-selected">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Marcos Paulo Silva</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8805</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">marcos.paulo@terra.com.br</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(31) 98771-0922</span>
+</td>
+<td class="px-md py-3"><div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">account_tree</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">Demonstração de Motosserras</span>
+</div></td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">10/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Novo</span>
+</td>
+
+</tr>
+<!-- Lead 4: New -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Juliana Mendes</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8799</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">ju.mendes@bol.com.br</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(19) 98821-3345</span>
+</td>
+<td class="px-md py-3"><div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">inventory_2</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">STIHL MS 170</span>
+</div></td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">10/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Novo
+</span>
+</td>
+
+</tr>
+<!-- Lead 5: Carlos Eduardo -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Carlos Eduardo</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8750</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">c.eduardo@gmail.com</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(51) 98833-2211</span>
+</td>
+<td class="px-md py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">account_tree</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">Escolha sua Roçadeira STIHL</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">09/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Novo
+</span>
+</td>
+
+</tr>
+<!-- Lead 6: Patrícia Lima -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Patrícia Lima</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8742</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">patricia.lima@uol.com.br</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(11) 97766-5544</span>
+</td>
+<td class="px-md py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">account_tree</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">Demonstração de Motosserras</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">08/05/2024</span>
+</td>
+<td class="px-md py-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 text-yellow-500 font-label-md text-[10px] rounded border border-yellow-500/20 uppercase"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Com Histórico</span></td>
+
+</tr>
+<!-- Lead 7: André Souza -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">André Souza</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8735</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">andre.agro@outlook.com</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(41) 99911-8822</span>
+</td>
+<td class="px-md py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">inventory_2</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">STIHL FS 85</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">08/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Novo
+</span>
+</td>
+
+</tr>
+<!-- Lead 8: Roberto Mendes -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-3">
+<div class="font-label-md font-bold text-on-surface">Roberto Mendes</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8728</div>
+</td>
+<td class="px-md py-3">
+<span class="font-body-sm text-on-surface-variant">roberto.m@terra.com.br</span>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(31) 98855-4433</span>
+</td>
+<td class="px-md py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]">account_tree</span>
+<span class="font-label-md text-on-surface truncate max-w-[120px]">Escolha sua Roçadeira STIHL</span>
+</div>
+</td>
+<td class="px-md py-3">
+<span class="font-mono-sm text-[11px] text-on-surface-variant">07/05/2024</span>
+</td>
+<td class="px-md py-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> Novo
+</span>
+</td>
+
+</tr></tbody>
+</table>
+</div>
+<div class="px-md py-3 bg-surface-container-low/30 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="font-label-md text-[10px] text-on-surface-variant uppercase">Exibindo 4 de 128 leads</span>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:bg-surface-variant rounded disabled:opacity-30" disabled=""><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<div class="flex items-center gap-1">
+<button class="w-6 h-6 flex items-center justify-center bg-primary text-on-primary rounded font-mono-sm text-[10px]">1</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-variant rounded font-mono-sm text-[10px]">2</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-variant rounded font-mono-sm text-[10px]">3</button>
+</div>
+<button class="p-1 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg z-20">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+</main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.15';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+        });
+    });
+</script><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15;"></canvas><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15;"></canvas>
+
+
+
+
+</body></html>
+
+<!-- Gerenciamento de Leads - Novos e Histórico -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Leads</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        .glass-header {
+            background-color: rgba(19, 19, 19, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(134, 149, 133, 0.2);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+<!-- Superior Navigation Header -->
+<header class="glass-header sticky top-0 w-full px-lg h-16 flex items-center justify-between z-50">
+<div class="flex items-center gap-xl">
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md font-black text-primary uppercase tracking-tighter leading-none">quantio video</h1>
+<p class="font-label-md text-[9px] text-on-surface-variant opacity-70 uppercase tracking-widest">Digital Experience</p>
+</div>
+<nav class="hidden lg:flex items-center gap-1">
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">account_tree</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Jornadas</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">inventory_2</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Produtos</span>
+</a>
+<a class="flex items-center px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">group</span>
+<span class="font-label-md text-[11px] font-bold uppercase tracking-wider">Leads</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">monitoring</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">analytics</span>
+</a>
+<a class="flex items-center px-3 py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50 transition-all rounded-md group" href="#">
+<span class="material-symbols-outlined text-[18px] mr-2">settings</span>
+<span class="font-label-md text-[11px] uppercase tracking-wider">Ajustes</span>
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">light_mode</span>
+</button>
+<div class="flex items-center gap-3 bg-surface-container-high/40 border border-outline-variant/30 py-1 pl-1 pr-3 rounded-full">
+<div class="w-7 h-7 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Perfil do usuário" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI">
+</div>
+<span class="font-label-md text-[11px] text-on-surface-variant">ADM</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
+<!-- Secondary Toolbar -->
+<div class="w-full px-lg h-12 bg-surface-container-lowest border-b border-outline-variant/30 flex items-center justify-between shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-[11px] font-bold text-on-background uppercase tracking-widest opacity-50">Video Commerce</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
+<span class="font-label-md text-[11px] text-on-surface uppercase tracking-widest">Painel de Leads</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px] group-focus-within:text-primary transition-colors">search</span>
+<input class="bg-transparent border-none rounded-md pl-9 pr-4 py-1 text-[11px] w-32 focus:w-48 focus:bg-surface-variant/30 transition-all outline-none" placeholder="PESQUISAR LEADS..." type="text">
+</div>
+</div>
+</div>
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between mb-lg items-center">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Leads</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Acompanhe as oportunidades geradas pelas suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="flex items-center gap-2">
+<button class="px-3 py-2 text-on-surface bg-surface-container-high border border-outline-variant rounded-lg transition-all flex items-center gap-2 group" title="Exportar CSV">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="font-label-md uppercase text-[10px]">Exportar</span>
+</button>
+<button class="px-4 py-2 bg-surface-container-high border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span class="font-label-md uppercase text-[10px]">Filtrar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Leads Data Table -->
+<div class="flex items-center gap-1 mb-4 border-b border-outline-variant/30">
+<button class="px-4 py-2 font-label-md text-[11px] uppercase tracking-wider transition-all text-on-surface-variant">
+    Novos Leads
+  </button>
+<button class="px-4 py-2 font-label-md text-[11px] uppercase tracking-wider hover:text-on-surface transition-all text-primary border-b-2 border-primary">
+    Histórico de Leads
+  </button>
+</div><div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant"><tr><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Email</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Telefone</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Jornada ou produto de origem</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Data do Lead</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Data do Contato</th><th class="px-md py-4 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Atendente</th></tr></thead>
+<tbody class="divide-y divide-outline-variant/30"><tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row"><td class="px-md py-3"><div class="font-label-md font-bold text-on-surface">Ricardo Oliveira</div><div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8821</div></td><td class="px-md py-3"><span class="font-body-sm text-on-surface-variant">ricardo.oliver@gmail.com</span></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(11) 98872-4412</span></td><td class="px-md py-3"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">account_tree</span><span class="font-label-md text-on-surface truncate max-w-[120px]">Escolha sua Roçadeira</span></div></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant">12/05/2024</span></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant">13/05/2024</span></td><td class="px-md py-3"><span class="font-body-sm text-on-surface-variant opacity-80">Admin</span></td></tr><tr class="hover:bg-surface-container-low transition-colors cursor-pointer group/row"><td class="px-md py-3"><div class="font-label-md font-bold text-on-surface">Fernanda Santos</div><div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #LD-8819</div></td><td class="px-md py-3"><span class="font-body-sm text-on-surface-variant">f.santos.agro@outlook.com</span></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant opacity-80">(41) 99122-8001</span></td><td class="px-md py-3"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[16px]">inventory_2</span><span class="font-label-md text-on-surface truncate max-w-[120px]">STIHL FS 55</span></div></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant">11/05/2024</span></td><td class="px-md py-3"><span class="font-mono-sm text-[11px] text-on-surface-variant">12/05/2024</span></td><td class="px-md py-3"><span class="font-body-sm text-on-surface-variant opacity-80">João Silva</span></td></tr></tbody>
+</table>
+</div>
+<div class="px-md py-3 bg-surface-container-low/30 border-t border-outline-variant/30 flex items-center justify-between">
+<span class="font-label-md text-[10px] text-on-surface-variant uppercase">Exibindo 4 de 128 leads</span>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:bg-surface-variant rounded disabled:opacity-30" disabled=""><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<div class="flex items-center gap-1">
+<button class="w-6 h-6 flex items-center justify-center bg-primary text-on-primary rounded font-mono-sm text-[10px]">1</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-variant rounded font-mono-sm text-[10px]">2</button>
+<button class="w-6 h-6 flex items-center justify-center hover:bg-surface-variant rounded font-mono-sm text-[10px]">3</button>
+</div>
+<button class="p-1 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg z-20">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+</main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.15';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+        });
+    });
+</script><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15;"></canvas><canvas width="1280" height="1024" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15;"></canvas>
+
+
+</body></html>
+
+<!-- Gerenciamento de Leads - Histórico de Contatos -->
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Video Commerce | Gerenciamento de Produtos</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Geist', sans-serif;
+            background-color: #09090B;
+            color: #e5e2e1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .workbench-bg {
+            background-image: radial-gradient(#27272A 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0e0e0e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 10px;
+        }
+        .table-row-selected {
+            background-color: rgba(75, 226, 119, 0.05);
+            border-left: 2px solid #4be277;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#76231b",
+                        "tertiary": "#ffb5ab",
+                        "secondary-fixed-dim": "#c0c1ff",
+                        "primary": "#4be277",
+                        "tertiary-fixed": "#ffdad5",
+                        "tertiary-container": "#ff8b7c",
+                        "inverse-primary": "#006e2f",
+                        "surface": "#131313",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "error-container": "#93000a",
+                        "surface-bright": "#3a3939",
+                        "secondary-fixed": "#e1e0ff",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary-fixed-variant": "#7f2a21",
+                        "outline": "#869585",
+                        "on-secondary-fixed": "#07006c",
+                        "on-tertiary-fixed": "#410001",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#b0b2ff",
+                        "primary-fixed": "#6bff8f",
+                        "on-surface-variant": "#bccbb9",
+                        "surface-container": "#201f1f",
+                        "primary-fixed-dim": "#4ae176",
+                        "surface-container-highest": "#353534",
+                        "on-secondary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed-dim": "#ffb4a9",
+                        "surface-container-lowest": "#0e0e0e",
+                        "outline-variant": "#3d4a3d",
+                        "surface-variant": "#353534",
+                        "on-tertiary": "#60130d",
+                        "on-primary-fixed-variant": "#005321",
+                        "on-error": "#690005",
+                        "secondary-container": "#3131c0",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#002109",
+                        "primary-container": "#22c55e",
+                        "on-error-container": "#ffdad6",
+                        "surface-tint": "#4ae176",
+                        "surface-container-high": "#2a2a2a",
+                        "background": "#131313",
+                        "surface-dim": "#131313",
+                        "on-primary-container": "#004b1e",
+                        "on-primary": "#003915",
+                        "secondary": "#c0c1ff",
+                        "on-secondary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "xs": "8px",
+                        "gutter": "16px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "headline-md": ["Geist"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["18px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "mono-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation Header -->
+<header class="h-16 bg-surface-container-lowest border-b border-outline-variant flex items-center px-lg shrink-0 z-20">
+<div class="flex items-center gap-12 w-full">
+<!-- Brand -->
+<div class="flex flex-col leading-tight">
+<h1 class="font-headline-md text-primary font-black uppercase tracking-tight">QUANTIO VIDEO</h1>
+<span class="text-[9px] text-on-surface-variant font-bold tracking-[0.2em] uppercase opacity-60">Digital Experience</span>
+</div>
+<!-- Navigation -->
+<nav class="flex items-center gap-2">
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Jornadas</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-primary bg-primary/10 rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Produtos</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Leads</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">monitoring</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Analytics</span>
+</a>
+<a class="flex items-center gap-2 px-4 py-2 text-on-surface-variant hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-[13px] uppercase font-bold tracking-wide">Ajustes</span>
+</a>
+</nav>
+<!-- Right Actions -->
+<div class="ml-auto flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">light_mode</span>
+</button>
+<div class="flex items-center gap-2 pl-4 border-l border-outline-variant">
+<div class="bg-surface-container-high p-1 pr-4 rounded-full flex items-center gap-3 border border-outline-variant">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz8CFkRlaJCrDobZj-AMSxSJpZbSuH5brFH3lrU51FKnBPkBjBn-vzqOg3PUmFtvb8tdRpx4kocal0jlQdqcYHDPbdtJABIcWLS15Tb62NKy_8aSIJUf7V91jeLd1RCGEy6JiTf2ArkdzZcbuuIxZ9xYtq4Z2m9gL_i3ihZyBObpWOP6EfYpDNXdWHXcgdhTwgdNQsrbDFbZq5R1Ep57-LWLz5os3lsIXJ3OhlS5cVLb8k2iFh-FTS7jRIhzBz1cVdS-LSrhmnTSI">
+</div>
+<span class="font-label-md font-bold uppercase tracking-wider text-on-surface">ADM</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col min-w-0 bg-background relative overflow-hidden">
+<!-- Content Canvas -->
+<section class="flex-1 overflow-y-auto custom-scrollbar workbench-bg p-lg">
+<div class="max-w-7xl mx-auto space-y-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Produtos</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Gerencie com eficiência os produtos das suas jornadas de vídeo.</p>
+</div>
+<div class="flex gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-body-sm w-64 focus:border-primary transition-colors outline-none" placeholder="Buscar produtos..." type="text">
+</div>
+<button class="px-lg py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="font-label-md">ADICIONAR PRODUTO</span>
+</button>
+</div>
+</div>
+<!-- Folders/Categories -->
+<div class="space-y-4">
+<!-- Folder: Roçadeiras -->
+<details class="group bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm" open="">
+<summary class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-open:rotate-90 transition-transform">chevron_right</span>
+<span class="material-symbols-outlined text-on-surface-variant">folder</span>
+<span class="font-headline-md text-headline-md text-on-surface">Roçadeiras</span>
+<span class="px-2 py-0.5 bg-surface-container-high rounded-full font-label-md text-[10px] text-on-surface-variant">3 PRODUTOS</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</summary>
+<div class="border-t border-outline-variant/30">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low/50 border-b border-outline-variant">
+<tr>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider w-16 text-center text-[10px]">Img</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Nome do Produto</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Status</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-[10px]">Link</th>
+<th class="px-md py-3 font-label-md text-on-surface-variant uppercase tracking-wider text-right text-[10px]">Ações</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- FS 55 -->
+<tr class="table-row-selected hover:bg-surface-container-low transition-colors cursor-pointer group/row">
+<td class="px-md py-2">
+<div class="w-10 h-10 rounded bg-black border border-outline-variant overflow-hidden mx-auto">
+<img alt="STIHL FS 55" class="w-full h-full object-contain p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYg20HostXybKX-xIElarvBnsTQyT0rSjkHOA_Y1H_xVrdNYjnV_Fmr0vetxTmNAcK1-cfsGP19EqaAjy0Kc-8VDc7FB0YLNBh3jKpOSSVdPWznRS_5lG6-vWojX1akRdDP9YxPt13H44NOgtUq6QYEFDss_lbDA5TbY38H5Vdrowv2ISvdsPhARH4_p7NcSnXGbfs89lHUWp-Hqo8FgRlw8hFLk4e3YyCvbu9vs3EJ-ATetUObOgLf7Kjc8uKd2tAZgqS0LOHn30">
+</div>
+</td>
+<td class="px-md py-2">
+<div class="font-label-md font-bold text-on-surface">STIHL FS 55</div>
+<div class="font-mono-sm text-[10px] text-on-surface-variant opacity-60">ID: #INV-5501</div>
+</td>
+<td class="px-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary font-label-md text-[10px] rounded border border-primary/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> PUBLICADA
+                                        </span>
+</td>
+<td class="px-md py-2">
+<span class="font-mono-sm text-on-surface-variant truncate max-w-[200px] block">stihl.com.br/fs55...</span>
+</td>
+<td class="px-md py-2 text-right">
+<div class="flex justify-end gap-1">
+<button class="p-1.5 text-primary hover:bg-primary/10 rounded transition-colors" title="Editar"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-variant rounded transition-colors" title="Duplicar"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="p-1.5 text-error/60 hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</td>
+</tr>
+<!-- Other rows... -->
+</tbody>
+</table>
+</div>
+</details>
+</div>
+</div>
+</section>
+<!-- Global Floating Help -->
+<div class="fixed bottom-lg right-lg">
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">question_mark</span>
+</button>
+</div>
+<!-- Product Editing Modal -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" id="edit-modal">
+<div class="w-full bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 max-w-7xl">
+<!-- Modal Header -->
+<div class="px-lg py-3 bg-surface-container-high flex justify-between items-center border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<span class="font-label-md font-bold text-primary">EDITANDO: STIHL FS 55</span>
+<span class="text-on-surface-variant opacity-50 font-mono-sm text-[11px]">#INV-5501</span>
+</div>
+<button class="p-1 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="flex flex-col h-full">
+<!-- Tab Navigation -->
+<div class="px-lg border-b border-outline-variant bg-surface-container-low flex gap-lg">
+<button class="py-4 font-label-md text-label-md text-primary border-b-2 border-primary transition-colors">Dados do produto</button>
+<button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Especificações</button>
+<button class="py-4 font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Videos</button>
+<div class="ml-auto flex items-center gap-2 pr-2">
+<button class="p-2 text-primary hover:bg-primary/10 rounded-lg transition-all" title="Visualizar no Player"><span class="material-symbols-outlined text-[20px]">play_arrow</span></button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant rounded-lg transition-all" title="Duplicar"><span class="material-symbols-outlined text-[20px]">content_copy</span></button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg transition-all" title="Excluir"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+</div>
+</div>
+<!-- Tab Content Container -->
+<div class="p-lg overflow-y-auto custom-scrollbar" style="max-height: 70vh;">
+<!-- Active Tab: Dados do produto -->
+<div class="grid grid-cols-12 gap-lg">
+<div class="col-span-12 lg:col-span-8 space-y-md">
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Nome do Produto</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:border-primary focus:ring-0 outline-none transition-colors" type="text" value="STIHL FS 55">
+</div>
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Categoria</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:border-primary focus:ring-0 outline-none transition-colors appearance-none text-on-surface">
+<option selected="" value="rocadeiras">Roçadeiras</option>
+<option value="motosserras">Motosserras</option>
+<option value="sopradores">Sopradores</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md mt-4">
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Tag</label>
+<div class="flex gap-2 items-center">
+<input class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-mono-sm text-on-surface-variant focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="Gasolina" type="text" value="Roçadeiras">
+<div class="relative flex items-center">
+<input class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="tag-color-picker" type="color" value="#4be277">
+<div class="w-8 h-8 rounded-full bg-primary border-2 border-white shadow-sm flex items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-[14px] text-on-primary">colorize</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Link</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-mono-sm text-on-surface-variant focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="https://..." type="text">
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Resumo</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:border-primary focus:ring-0 outline-none transition-colors" placeholder="Resumo rápido..." rows="4"></textarea>
+</div>
+<div class="space-y-sm">
+<label class="block font-label-md text-label-md text-on-surface-variant">Descrição Ampla</label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 font-body-md focus:border-primary focus:ring-0 outline-none transition-colors" rows="4">Leve e ágil. Ideal para grama baixa e áreas pequenas em casa.</textarea>
+</div>
+</div>
+<div class="pt-4 flex gap-3">
+<button class="px-8 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all">Salvar Alterações</button>
+<button class="px-6 py-2 border border-outline-variant text-on-surface font-bold rounded-lg hover:bg-surface-variant transition-colors" onclick="document.getElementById('edit-modal').remove()">Descartar</button>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 space-y-md">
+<label class="block font-label-md text-label-md text-on-surface-variant">Prévia de Mídia</label>
+<div class="aspect-square w-full h-80 rounded-lg bg-black border border-outline-variant flex flex-col items-center justify-center group relative overflow-hidden">
+<img alt="FS 55 Preview" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_oR18bJWIIsTs-JcQLo5NXRMWCtmdusJAujJ6su1EypwVB40omU3kghp5-13gCmrY1socJ-0bK8xNAie87an9C46eHsrR9uooht3LXbGJOdiBsj3Q8XPWOI5s8O_QW1EkEesjyW3f-FqiyvFB_W4j3ADBr9QY9rvpd-Pu1SSdT8Yl4BJ3I1-YILotcyaWwDJhUZfyqMKbwf-7xPOLTPgw9j7yTKG3w0lG7WMxWydXT9AVO8KfjA2dA8HpVzAa2Y9k-BNm3nOv2i8">
+<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+<button class="px-3 py-1.5 bg-white text-black font-bold text-xs rounded hover:scale-105 transition-transform">ALTERAR</button>
+<button class="px-3 py-1.5 bg-error text-on-error font-bold text-xs rounded hover:scale-105 transition-transform">REMOVER</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // Particle background logic
+    const canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '0';
+    canvas.style.opacity = '0.2';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    const dots = [];
+    for(let i=0; i<40; i++) {
+        dots.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: Math.random() * 1.2,
+            vx: (Math.random() - 0.5) * 0.15,
+            vy: (Math.random() - 0.5) * 0.15
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#4be277';
+        dots.forEach(dot => {
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+            if(dot.x < 0 || dot.x > width) dot.vx *= -1;
+            if(dot.y < 0 || dot.y > height) dot.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Table row interaction simulation
+    document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('table-row-selected'));
+            row.classList.add('table-row-selected');
+            const name = row.querySelector('.font-bold').innerText;
+            const id = row.querySelector('.font-mono-sm').innerText;
+            const editTitle = document.querySelector('#edit-modal .font-label-md.font-bold.text-primary');
+            if (editTitle) editTitle.innerText = `EDITANDO: ${name}`;
+            const editId = document.querySelector('#edit-modal .text-on-surface-variant.opacity-50.font-mono-sm');
+            if (editId) editId.innerText = id;
+        });
+    });
+</script>
+</body></html>

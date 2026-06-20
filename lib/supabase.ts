@@ -144,16 +144,63 @@ export type StepField = {
   position: number;
 };
 
+// Produto da BIBLIOTECA da empresa (reutilizável em várias jornadas).
+// journey_id mantido só por compatibilidade — o vínculo com jornadas é
+// feito via step_products. O escopo agora é company_id.
 export type Product = {
   id: string;
-  journey_id: string;
+  company_id: string | null;
+  journey_id: string | null;
+  category_id: string | null;
   name: string;
   photo_url: string | null;
   benefits: string | null;
   buy_link: string | null;
   whatsapp: string | null;
+  // Campos novos do design system.
+  tag: string | null;
+  tag_color: string | null;
+  summary: string | null;       // "Resumo"
+  description: string | null;   // "Descrição Ampla"
+  status: "draft" | "published";
+  specs_enabled: boolean;
+  specs_summary: string | null;
   // Até 2 botões de ação configuráveis (WhatsApp / personalizado).
   buttons: ProductButton[];
+  // Ordem dentro da categoria (definida por drag-n-drop em /admin/produtos).
+  position: number;
+  // Quantos segundos antes do fim do vídeo principal a barra de destaques deve
+  // aparecer no player. 0 = aparece desde o início (ver supabase_products_highlights_reveal.sql).
+  highlights_reveal_seconds: number;
+};
+
+// Pasta/categoria de produtos (Roçadeiras, Motosserras, ...).
+export type ProductCategory = {
+  id: string;
+  company_id: string;
+  name: string;
+  position: number;
+};
+
+// Linha da tabela de atributos técnicos de um produto.
+export type ProductSpec = {
+  id: string;
+  product_id: string;
+  attribute: string;
+  value: string | null;
+  position: number;
+};
+
+// Vídeo do produto (também serve como "destaque"/story no player).
+export type ProductVideo = {
+  id: string;
+  product_id: string;
+  title: string | null;
+  video_url: string;
+  thumb_url: string | null;
+  is_main: boolean;
+  is_highlight: boolean;
+  position: number;
 };
 
 export type StepProduct = {
@@ -169,4 +216,6 @@ export type EventType =
   | "click_option"
   | "click_whatsapp"
   | "click_buy"
-  | "complete";
+  | "complete"
+  | "view_specs" // abriu as especificações de um produto
+  | "click_highlight"; // abriu um destaque (story) de um produto

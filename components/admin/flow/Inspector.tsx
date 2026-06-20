@@ -7,6 +7,7 @@ import type {
   StepField,
   FieldKind,
   Product,
+  ProductCategory,
   StepType,
   ButtonLayout,
   ButtonTemplate,
@@ -52,6 +53,7 @@ type Props = {
   fields: StepField[];
   productIds: string[];
   products: Product[];
+  categories: ProductCategory[];
   isStart: boolean;
   onTitle: (v: string) => void;
   onQuestion: (v: string) => void;
@@ -89,7 +91,8 @@ type Tab =
   | "produtos";
 
 export default function Inspector(props: Props) {
-  const { step, options, fields, products, productIds, isStart } = props;
+  const { step, options, fields, products, categories, productIds, isStart } =
+    props;
   const isResult = step.type === "result";
   const isCollect = step.type === "collect";
 
@@ -714,20 +717,44 @@ export default function Inspector(props: Props) {
             </span>
             {products.length === 0 ? (
               <p className="text-xs text-[var(--text-subtle)]">
-                Cadastre produtos na seção abaixo do canvas para marcá-los aqui.
+                Nenhum produto na biblioteca ainda. Cadastre em
+                Produtos (menu superior) para poder marcá-los aqui.
               </p>
             ) : (
-              <div className="flex flex-col gap-1.5">
-                {products.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={selProducts.includes(p.id)}
-                      onChange={() => toggleProduct(p.id)}
-                    />
-                    {p.name}
-                  </label>
-                ))}
+              <div className="flex flex-col gap-3">
+                {/* Produtos agrupados por categoria, na ordem definida em
+                    Produtos (categorias por position; produtos por position). */}
+                {[
+                  ...categories.map((c) => ({ id: c.id, name: c.name })),
+                  { id: "__none__", name: "Sem categoria" },
+                ].map((cat) => {
+                  const itens = products.filter(
+                    (p) => (p.category_id ?? "__none__") === cat.id
+                  );
+                  if (itens.length === 0) return null;
+                  return (
+                    <div key={cat.id}>
+                      <p className="mb-1.5 font-mono-sm text-[10px] uppercase tracking-wider text-[var(--text-subtle)]">
+                        {cat.name}
+                      </p>
+                      <div className="flex flex-col gap-1.5 pl-1">
+                        {itens.map((p) => (
+                          <label
+                            key={p.id}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selProducts.includes(p.id)}
+                              onChange={() => toggleProduct(p.id)}
+                            />
+                            {p.name}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

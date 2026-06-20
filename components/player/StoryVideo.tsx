@@ -32,6 +32,10 @@ type Props = {
   // onCartClick é fornecido (ex.: etapa de pergunta com produtos vinculados).
   onCartClick?: () => void;
   cartActive?: boolean;
+  // Botão de especificações (mesma posição/estilo do carrinho). Usado no player
+  // de produto individual, onde substitui o carrinho. Só aparece se fornecido.
+  onSpecsClick?: () => void;
+  specsActive?: boolean;
   // Quando true, o frame se ajusta pela altura da tela (player principal), para
   // caber 100% no mobile. Default false (sizing pela largura — ex.: resultado).
   fitToHeight?: boolean;
@@ -52,6 +56,8 @@ export default function StoryVideo({
   onAudioChange,
   onCartClick,
   cartActive = false,
+  onSpecsClick,
+  specsActive = false,
   fitToHeight = false,
   children,
 }: Props) {
@@ -267,6 +273,23 @@ export default function StoryVideo({
             }`}
           >
             <IconCart />
+          </button>
+        )}
+
+        {/* Especificações — ocupa a posição do carrinho no player de produto. */}
+        {onSpecsClick && (
+          <button
+            type="button"
+            onClick={onSpecsClick}
+            aria-label="Especificações"
+            title="Especificações"
+            className={`flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-colors ${
+              specsActive
+                ? "bg-white text-gray-900"
+                : "bg-black/45 text-white hover:bg-black/65"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">list_alt</span>
           </button>
         )}
 
