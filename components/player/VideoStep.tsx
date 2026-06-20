@@ -15,6 +15,7 @@ import {
 import { buildLeadMessage } from "@/lib/wa";
 import { productCtaButtons, ctaButtonHref } from "@/lib/productButtons";
 import OptionIcon from "@/components/ui/OptionIcon";
+import ProductTag from "@/components/ui/ProductTag";
 import StoryVideo from "./StoryVideo";
 import BackButton from "./BackButton";
 
@@ -157,8 +158,9 @@ export default function VideoStep({
                             />
                           )}
                           <div className="flex min-w-0 flex-1 flex-col gap-1">
-                            <h3 className="truncate text-sm font-bold text-gray-900">
-                              {product.name}
+                            <h3 className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-gray-900">
+                              <ProductTag tag={product.tag} color={product.tag_color} />
+                              <span className="truncate">{product.name}</span>
                             </h3>
                             {product.benefits && (
                               <p className="line-clamp-2 text-xs text-gray-600">

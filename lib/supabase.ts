@@ -124,6 +124,42 @@ export type ProductButton = {
   value: string;
 };
 
+// =====================================================================
+// Botões de AÇÃO ricos do produto (aba "Ações"), exibidos SOBRE os vídeos
+// do player de produto, com timing por vídeo. Diferente do ProductButton
+// (que é o CTA simples do resultado/carrinho da jornada).
+// =====================================================================
+export type ProductActionKind = "custom" | "whatsapp" | "product" | "form";
+
+// Campo de um botão do tipo "formulário" (espelha StepField).
+export type ProductFormField = {
+  kind: FieldKind;
+  label: string;
+  required: boolean;
+};
+
+export type ProductAction = {
+  id: string; // gerado no client (uuid) — referenciado pelos placements dos vídeos
+  kind: ProductActionKind;
+  label: string; // Texto Principal
+  subtitle: string | null; // Texto secundário
+  icon: string | null; // emoji/símbolo
+  color: string; // cor do botão (hex)
+  opacity: number; // 0..1
+  // Por tipo:
+  url?: string; // custom → link de destino
+  whatsapp?: string; // whatsapp → número (DDI)
+  productId?: string; // product → produto destino
+  fields?: ProductFormField[]; // form → campos do formulário
+};
+
+// Posicionamento de um botão de ação NUM vídeo: quando aparece (segundos).
+export type ProductVideoButton = {
+  actionId: string;
+  start: number;
+  end: number;
+};
+
 export type Option = {
   id: string;
   step_id: string;
@@ -167,6 +203,8 @@ export type Product = {
   specs_summary: string | null;
   // Até 2 botões de ação configuráveis (WhatsApp / personalizado).
   buttons: ProductButton[];
+  // Catálogo de botões de ação ricos (aba "Ações") exibidos sobre os vídeos.
+  action_buttons: ProductAction[];
   // Ordem dentro da categoria (definida por drag-n-drop em /admin/produtos).
   position: number;
   // Quantos segundos antes do fim do vídeo principal a barra de destaques deve
@@ -201,6 +239,8 @@ export type ProductVideo = {
   is_main: boolean;
   is_highlight: boolean;
   position: number;
+  // Botões de ação posicionados neste vídeo (referenciam Product.action_buttons).
+  buttons: ProductVideoButton[];
 };
 
 export type StepProduct = {

@@ -6,6 +6,7 @@ import { buildLeadMessage } from "@/lib/wa";
 import { productCtaButtons, ctaButtonHref } from "@/lib/productButtons";
 import StoryVideo from "./StoryVideo";
 import SpecsModal from "./SpecsModal";
+import ProductTag from "@/components/ui/ProductTag";
 
 // =====================================================================
 // ResultStep — tela final: vídeo de recomendação + produtos sugeridos
@@ -93,7 +94,10 @@ export default function ResultStep({
                 />
               )}
 
-              <h3 className="text-lg font-bold">{product.name}</h3>
+              <h3 className="flex items-center gap-2 text-lg font-bold">
+                <ProductTag tag={product.tag} color={product.tag_color} />
+                <span>{product.name}</span>
+              </h3>
               {product.benefits && (
                 <p className="text-sm text-gray-600">{product.benefits}</p>
               )}

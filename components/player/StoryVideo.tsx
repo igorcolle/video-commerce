@@ -13,8 +13,14 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 // botões: assim os toques em áreas livres pausam/retomam o vídeo.
 // =====================================================================
 
-// Estado de reprodução exposto ao overlay (usado para revelar os botões).
-export type PlaybackState = { remaining: number; ended: boolean };
+// Estado de reprodução exposto ao overlay (usado para revelar os botões e
+// posicionar os botões de ação no tempo do vídeo).
+export type PlaybackState = {
+  remaining: number; // segundos até o fim
+  ended: boolean;
+  current: number; // tempo atual (segundos)
+  duration: number; // duração total (segundos; 0 enquanto desconhecida)
+};
 
 type Props = {
   src: string;
@@ -36,6 +42,10 @@ type Props = {
   // de produto individual, onde substitui o carrinho. Só aparece se fornecido.
   onSpecsClick?: () => void;
   specsActive?: boolean;
+  // Posição vertical (classe Tailwind, ex.: "top-28") do bloco de controles do
+  // canto superior direito. Default "top-4". Usado no player de produto para
+  // descer os botões para logo abaixo da faixa de destaques.
+  controlsTop?: string;
   // Quando true, o frame se ajusta pela altura da tela (player principal), para
   // caber 100% no mobile. Default false (sizing pela largura — ex.: resultado).
   fitToHeight?: boolean;
@@ -58,6 +68,7 @@ export default function StoryVideo({
   cartActive = false,
   onSpecsClick,
   specsActive = false,
+  controlsTop = "top-4",
   fitToHeight = false,
   children,
 }: Props) {
@@ -67,6 +78,8 @@ export default function StoryVideo({
   const [muted, setMuted] = useState(!audioOn);
   const [progress, setProgress] = useState(0); // 0–100
   const [remaining, setRemaining] = useState(Infinity); // segundos até o fim
+  const [current, setCurrent] = useState(0); // tempo atual (segundos)
+  const [duration, setDuration] = useState(0); // duração total (segundos)
   const [ended, setEnded] = useState(false);
   const [speedIdx, setSpeedIdx] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -168,8 +181,13 @@ export default function StoryVideo({
           playsInline
           preload="auto"
           className="h-full w-full object-cover"
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            if (v.duration && isFinite(v.duration)) setDuration(v.duration);
+          }}
           onTimeUpdate={(e) => {
             const v = e.currentTarget;
+            setCurrent(v.currentTime);
             if (v.duration) {
               setProgress((v.currentTime / v.duration) * 100);
               setRemaining(Math.max(0, v.duration - v.currentTime));
@@ -206,7 +224,7 @@ export default function StoryVideo({
 
       {/* Overlay (pergunta + botões), passado por quem usa o player */}
       {typeof children === "function"
-        ? children({ remaining, ended })
+        ? children({ remaining, ended, current, duration })
         : children}
 
       {/* Aviso em destaque "ative o som" (à esquerda do botão de volume) */}
@@ -214,7 +232,7 @@ export default function StoryVideo({
         <button
           type="button"
           onClick={enableSound}
-          className="sound-pill-glow absolute right-14 top-4 z-30 flex h-9 max-w-[60%] items-center gap-1.5 rounded-full bg-green-500 px-2.5 text-[11px] font-bold text-white shadow-lg sm:px-3 sm:text-xs"
+          className={`sound-pill-glow absolute right-14 ${controlsTop} z-30 flex h-9 max-w-[60%] items-center gap-1.5 rounded-full bg-green-500 px-2.5 text-[11px] font-bold text-white shadow-lg sm:px-3 sm:text-xs`}
         >
           <span className="truncate">
             <span className="sm:hidden">Ativar som</span>
@@ -236,7 +254,7 @@ export default function StoryVideo({
       )}
 
       {/* Controles no canto superior direito */}
-      <div className="absolute right-3 top-4 z-30 flex flex-col items-center gap-3">
+      <div className={`absolute right-3 ${controlsTop} z-30 flex flex-col items-center gap-3`}>
         {/* Fechar (X) — só aparece no widget; fica ACIMA do volume. */}
         {onClose && (
           <ControlButton label="Fechar" onClick={onClose}>

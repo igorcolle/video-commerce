@@ -50,8 +50,8 @@ export default async function ProductPlayerPage({
 
   // Vídeo principal (is_main) ou, na falta, o primeiro por posição.
   const list = videos ?? [];
-  const videoUrl =
-    list.find((v) => v.is_main)?.video_url ?? list[0]?.video_url ?? null;
+  const mainVideo = list.find((v) => v.is_main) ?? list[0] ?? null;
+  const videoUrl = mainVideo?.video_url ?? null;
 
   // Vídeos de destaque (bolinhas) do produto, na ordem (position).
   const highlights = list.filter((v) => v.is_highlight);
@@ -61,6 +61,7 @@ export default async function ProductPlayerPage({
       product={product}
       specs={specs ?? []}
       videoUrl={videoUrl}
+      mainVideoButtons={mainVideo?.buttons ?? []}
       highlights={highlights}
     />
   );

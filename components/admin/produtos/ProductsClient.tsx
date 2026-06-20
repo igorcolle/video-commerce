@@ -30,6 +30,7 @@ import {
   reorderProducts,
 } from "@/app/admin/produtos/actions";
 import ProductModal from "./ProductModal";
+import ProductTag from "@/components/ui/ProductTag";
 
 // Chave usada para agrupar produtos sem categoria.
 const NO_CAT = "__none__";
@@ -326,6 +327,12 @@ export default function ProductsClient({ categories, products }: Props) {
         <ProductModal
           product={editing}
           categories={localCats}
+          allProducts={localProducts.map((p) => ({
+            id: p.id,
+            name: p.name,
+            photo_url: p.photo_url,
+            summary: p.summary,
+          }))}
           onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
@@ -598,15 +605,10 @@ function ProductRow({
         </div>
       </td>
       <td className="px-md py-2">
-        <div className="font-label-md font-bold text-on-surface">{p.name}</div>
-        {p.tag && (
-          <span
-            className="font-mono-sm text-[10px]"
-            style={{ color: p.tag_color ?? undefined }}
-          >
-            #{p.tag}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 font-label-md font-bold text-on-surface">
+          <ProductTag tag={p.tag} color={p.tag_color} />
+          <span className="truncate">{p.name}</span>
+        </div>
       </td>
       <td className="px-md py-2">
         {p.status === "published" ? (

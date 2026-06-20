@@ -3,15 +3,19 @@
 import { useState } from "react";
 import { createBrowserAuthClient } from "@/lib/supabase-browser";
 import { compressVideo } from "@/lib/compressVideo";
-import type { ProductCategory } from "@/lib/supabase";
+import type {
+  ProductCategory,
+  ProductAction,
+  ProductActionKind,
+  ProductFormField,
+  ProductVideoButton,
+  FieldKind,
+} from "@/lib/supabase";
 import type { FullProduct } from "@/app/admin/produtos/page";
-import {
-  saveProductData,
-  saveProductSpecs,
-  saveProductVideos,
-} from "@/app/admin/produtos/actions";
+import { saveProduct } from "@/app/admin/produtos/actions";
+import OptionIcon from "@/components/ui/OptionIcon";
 
-type Tab = "dados" | "specs" | "videos";
+type Tab = "dados" | "specs" | "acoes" | "videos";
 
 type VideoRow = {
   title: string;
@@ -19,18 +23,85 @@ type VideoRow = {
   thumb_url: string;
   is_main: boolean;
   is_highlight: boolean;
+  buttons: ProductVideoButton[];
+};
+
+// Produto mínimo para o seletor do botão tipo "produto".
+type ProductRef = {
+  id: string;
+  name: string;
+  photo_url: string | null;
+  summary: string | null;
 };
 
 type Props = {
   product: FullProduct;
   categories: ProductCategory[];
+  allProducts: ProductRef[];
   onClose: () => void;
   onSaved: () => void;
+};
+
+// Cria um novo botão de ação com valores padrão.
+function newAction(): ProductAction {
+  return {
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random()}`,
+    kind: "custom",
+    label: "Botão",
+    subtitle: "",
+    icon: "",
+    color: "#4be277",
+    opacity: 1,
+    url: "",
+    whatsapp: "",
+    productId: "",
+    fields: [],
+  };
+}
+
+// Garante v dentro de [lo, hi].
+function clampNum(v: number, lo: number, hi: number): number {
+  if (hi < lo) return lo;
+  return Math.min(hi, Math.max(lo, v));
+}
+
+// Primeira lacuna livre do timeline (>=1s), com duração padrão ~5s, sem colidir
+// com os intervalos já existentes no vídeo.
+function firstFreeGap(
+  btns: ProductVideoButton[],
+  dur: number
+): [number, number] {
+  const sorted = [...btns].sort((a, b) => a.start - b.start);
+  let cursor = 0;
+  for (const o of sorted) {
+    if (o.start - cursor >= 1) return [cursor, Math.min(o.start, cursor + 5)];
+    cursor = Math.max(cursor, o.end);
+  }
+  const start = Math.min(cursor, Math.max(0, dur - 1));
+  return [start, Math.min(dur, start + 5)];
+}
+
+const KIND_LABELS: Record<ProductActionKind, string> = {
+  custom: "Botão personalizado",
+  whatsapp: "WhatsApp",
+  product: "Produto",
+  form: "Formulário",
+};
+
+const FIELD_LABELS: Record<FieldKind, string> = {
+  full_name: "Nome completo",
+  email: "E-mail",
+  whatsapp: "WhatsApp",
+  custom: "Pergunta personalizada",
 };
 
 export default function ProductModal({
   product,
   categories,
+  allProducts,
   onClose,
   onSaved,
 }: Props) {
@@ -58,6 +129,11 @@ export default function ProductModal({
       : [{ attribute: "", value: "" }]
   );
 
+  // ----- Aba "Ações"
+  const [actions, setActions] = useState<ProductAction[]>(
+    product.action_buttons ?? []
+  );
+
   // ----- Aba "Vídeos"
   const [videos, setVideos] = useState<VideoRow[]>(
     product.videos.map((v) => ({
@@ -66,9 +142,12 @@ export default function ProductModal({
       thumb_url: v.thumb_url ?? "",
       is_main: v.is_main,
       is_highlight: v.is_highlight,
+      buttons: v.buttons ?? [],
     }))
   );
   const [videoBusy, setVideoBusy] = useState<string | null>(null);
+  // Duração (s) de cada vídeo, lida ao carregar — define o máximo dos sliders.
+  const [videoDurations, setVideoDurations] = useState<Record<number, number>>({});
   // Segundos antes do fim do vídeo principal para a barra de destaques aparecer
   // (0 = aparece desde o início).
   const [highlightsRevealSeconds, setHighlightsRevealSeconds] = useState(
@@ -136,6 +215,7 @@ export default function ProductModal({
           thumb_url: "",
           is_main: prev.length === 0, // o primeiro vira principal
           is_highlight: true,
+          buttons: [],
         },
       ]);
     } finally {
@@ -143,13 +223,101 @@ export default function ProductModal({
     }
   }
 
+  // ---------------------------------------------------- AÇÕES (helpers)
+
+  function updateAction(id: string, patch: Partial<ProductAction>) {
+    setActions((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
+  }
+  function removeAction(id: string) {
+    setActions((prev) => prev.filter((a) => a.id !== id));
+    // Remove também os posicionamentos desse botão em todos os vídeos.
+    setVideos((prev) =>
+      prev.map((v) => ({ ...v, buttons: v.buttons.filter((b) => b.actionId !== id) }))
+    );
+  }
+  function addFormField(actionId: string) {
+    const a = actions.find((x) => x.id === actionId);
+    const fields: ProductFormField[] = [
+      ...(a?.fields ?? []),
+      { kind: "full_name", label: "Nome completo", required: true },
+    ];
+    updateAction(actionId, { fields });
+  }
+  function updateFormField(
+    actionId: string,
+    idx: number,
+    patch: Partial<ProductFormField>
+  ) {
+    const a = actions.find((x) => x.id === actionId);
+    const fields = (a?.fields ?? []).map((f, i) =>
+      i === idx ? { ...f, ...patch } : f
+    );
+    updateAction(actionId, { fields });
+  }
+  function removeFormField(actionId: string, idx: number) {
+    const a = actions.find((x) => x.id === actionId);
+    const fields = (a?.fields ?? []).filter((_, i) => i !== idx);
+    updateAction(actionId, { fields });
+  }
+
+  // ---------------------------------------------------- VÍDEOS (helpers)
+
+  function setVideoButtons(
+    i: number,
+    updater: (btns: ProductVideoButton[]) => ProductVideoButton[]
+  ) {
+    setVideos((prev) =>
+      prev.map((row, idx) =>
+        idx === i ? { ...row, buttons: updater(row.buttons) } : row
+      )
+    );
+  }
+  function togglePlacement(i: number, actionId: string, dur: number) {
+    setVideoButtons(i, (btns) => {
+      if (btns.some((b) => b.actionId === actionId))
+        return btns.filter((b) => b.actionId !== actionId);
+      // Posiciona o novo botão na primeira lacuna livre (evita colidir).
+      const [start, end] = firstFreeGap(btns, dur);
+      return [...btns, { actionId, start, end }];
+    });
+  }
+  // Move o INÍCIO de um botão sem invadir o intervalo de outro botão do vídeo.
+  function setPlacementStart(i: number, actionId: string, value: number) {
+    setVideoButtons(i, (btns) => {
+      const pl = btns.find((b) => b.actionId === actionId);
+      if (!pl) return btns;
+      const others = btns.filter((b) => b.actionId !== actionId);
+      const lo = Math.max(0, ...others.filter((o) => o.end <= pl.start).map((o) => o.end));
+      const start = clampNum(value, lo, pl.end);
+      return btns.map((b) => (b.actionId === actionId ? { ...b, start } : b));
+    });
+  }
+  // Move o FIM de um botão sem invadir o intervalo de outro botão do vídeo.
+  function setPlacementEnd(
+    i: number,
+    actionId: string,
+    value: number,
+    dur: number
+  ) {
+    setVideoButtons(i, (btns) => {
+      const pl = btns.find((b) => b.actionId === actionId);
+      if (!pl) return btns;
+      const others = btns.filter((b) => b.actionId !== actionId);
+      const hi = Math.min(dur, ...others.filter((o) => o.start >= pl.end).map((o) => o.start));
+      const end = clampNum(value, pl.start, hi);
+      return btns.map((b) => (b.actionId === actionId ? { ...b, end } : b));
+    });
+  }
+
   // ---------------------------------------------------------------- SALVAR
 
-  async function salvarDados() {
+  // Salva TODAS as abas de uma vez (corrige a perda de dados ao trocar de aba).
+  async function salvar() {
     setSaving(true);
     try {
       const fd = new FormData();
       fd.set("id", product.id);
+      // Dados
       fd.set("name", name);
       fd.set("category_id", categoryId);
       fd.set("tag", tag);
@@ -159,36 +327,16 @@ export default function ProductModal({
       fd.set("description", description);
       fd.set("photo_url", photoUrl);
       fd.set("status", status);
-      await saveProductData(fd);
-      onSaved();
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function salvarSpecs() {
-    setSaving(true);
-    try {
-      const fd = new FormData();
-      fd.set("id", product.id);
+      // Especificações
       fd.set("specs_enabled", specsEnabled ? "true" : "false");
       fd.set("specs_summary", specsSummary);
       fd.set("specs_json", JSON.stringify(specRows));
-      await saveProductSpecs(fd);
-      onSaved();
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function salvarVideos() {
-    setSaving(true);
-    try {
-      const fd = new FormData();
-      fd.set("id", product.id);
-      fd.set("videos_json", JSON.stringify(videos));
+      // Ações
+      fd.set("action_buttons_json", JSON.stringify(actions));
+      // Vídeos
       fd.set("highlights_reveal_seconds", String(highlightsRevealSeconds));
-      await saveProductVideos(fd);
+      fd.set("videos_json", JSON.stringify(videos));
+      await saveProduct(fd);
       onSaved();
     } finally {
       setSaving(false);
@@ -198,6 +346,8 @@ export default function ProductModal({
   const inputCls =
     "w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 font-body-md text-on-surface outline-none transition-colors focus:border-primary";
   const labelCls = "block font-label-md text-label-md text-on-surface-variant";
+  const smallInputCls =
+    "w-full rounded-md border border-outline-variant bg-surface-container-lowest px-2 py-1 font-body-sm text-on-surface outline-none focus:border-primary";
 
   return (
     <div
@@ -228,6 +378,7 @@ export default function ProductModal({
           {([
             ["dados", "Dados do produto"],
             ["specs", "Especificações"],
+            ["acoes", "Ações"],
             ["videos", "Vídeos"],
           ] as [Tab, string][]).map(([key, label]) => (
             <button
@@ -245,7 +396,7 @@ export default function ProductModal({
         </div>
 
         {/* Conteúdo */}
-        <div className="custom-scrollbar overflow-y-auto p-lg" style={{ maxHeight: "70vh" }}>
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-lg">
           {tab === "dados" && (
             <div className="grid grid-cols-12 gap-lg">
               <div className="col-span-12 space-y-md lg:col-span-8">
@@ -280,7 +431,7 @@ export default function ProductModal({
                     <label className={labelCls}>Tag</label>
                     <div className="flex items-center gap-2">
                       <input
-                        className={`${inputCls} flex-1 font-mono-sm`}
+                        className={`${inputCls} flex-1`}
                         placeholder="Ex.: Gasolina"
                         value={tag}
                         onChange={(e) => setTag(e.target.value)}
@@ -337,22 +488,6 @@ export default function ProductModal({
                     <option value="draft">Rascunho</option>
                     <option value="published">Publicada</option>
                   </select>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={salvarDados}
-                    disabled={saving}
-                    className="rounded-lg bg-primary px-8 py-2 font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-                  >
-                    {saving ? "Salvando..." : "Salvar Alterações"}
-                  </button>
-                  <button
-                    onClick={onClose}
-                    className="rounded-lg border border-outline-variant px-6 py-2 font-bold text-on-surface transition-colors hover:bg-surface-variant"
-                  >
-                    Descartar
-                  </button>
                 </div>
               </div>
 
@@ -520,22 +655,341 @@ export default function ProductModal({
                   </div>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="flex gap-3 border-t border-outline-variant/30 pt-4">
+          {tab === "acoes" && (
+            <div className="space-y-lg">
+              <div className="flex items-center justify-between border-b border-outline-variant/30 pb-4">
+                <div>
+                  <h3 className="font-headline-md text-headline-md text-on-surface">
+                    Botões de Ação
+                  </h3>
+                  <p className="text-[11px] text-on-surface-variant opacity-60">
+                    Cadastre botões para usar sobre os vídeos (aba Vídeos).
+                  </p>
+                </div>
                 <button
-                  onClick={salvarSpecs}
-                  disabled={saving}
-                  className="rounded-lg bg-primary px-8 py-2 font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                  onClick={() => setActions((prev) => [...prev, newAction()])}
+                  className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2 font-label-md text-primary transition-all hover:bg-primary/20"
                 >
-                  {saving ? "Salvando..." : "Salvar Alterações"}
-                </button>
-                <button
-                  onClick={onClose}
-                  className="rounded-lg border border-outline-variant px-6 py-2 font-bold text-on-surface transition-colors hover:bg-surface-variant"
-                >
-                  Descartar
+                  <span className="material-symbols-outlined text-[20px]">add</span>
+                  Adicionar botão
                 </button>
               </div>
+
+              {actions.length === 0 ? (
+                <p className="py-8 text-center font-body-md text-on-surface-variant">
+                  Nenhum botão ainda. Clique em &quot;Adicionar botão&quot;.
+                </p>
+              ) : (
+                <div className="space-y-md">
+                  {actions.map((a) => (
+                    <div
+                      key={a.id}
+                      className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4"
+                    >
+                      <div className="grid grid-cols-1 gap-lg lg:grid-cols-2">
+                        {/* Coluna de edição */}
+                        <div className="space-y-sm">
+                          <div className="flex items-center justify-between">
+                            <select
+                              className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1.5 font-body-sm text-on-surface outline-none focus:border-primary"
+                              value={a.kind}
+                              onChange={(e) =>
+                                updateAction(a.id, {
+                                  kind: e.target.value as ProductActionKind,
+                                })
+                              }
+                            >
+                              {(Object.keys(KIND_LABELS) as ProductActionKind[]).map(
+                                (k) => (
+                                  <option key={k} value={k}>
+                                    {KIND_LABELS[k]}
+                                  </option>
+                                )
+                              )}
+                            </select>
+                            <button
+                              onClick={() => removeAction(a.id)}
+                              className="text-on-surface-variant transition-colors hover:text-error"
+                              title="Remover botão"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">
+                                delete
+                              </span>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <label className={labelCls}>Texto Principal</label>
+                              <input
+                                className={smallInputCls}
+                                value={a.label}
+                                onChange={(e) =>
+                                  updateAction(a.id, { label: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className={labelCls}>Texto secundário</label>
+                              <input
+                                className={smallInputCls}
+                                value={a.subtitle ?? ""}
+                                onChange={(e) =>
+                                  updateAction(a.id, { subtitle: e.target.value })
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="space-y-1">
+                              <label className={labelCls}>Ícone/Emoji</label>
+                              <input
+                                className={smallInputCls}
+                                placeholder="🔥"
+                                value={a.icon ?? ""}
+                                onChange={(e) =>
+                                  updateAction(a.id, { icon: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className={labelCls}>Cor</label>
+                              <input
+                                type="color"
+                                className="h-8 w-full cursor-pointer rounded-md border border-outline-variant bg-transparent"
+                                value={a.color}
+                                onChange={(e) =>
+                                  updateAction(a.id, { color: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className={labelCls}>
+                                Opacidade {Math.round((a.opacity ?? 1) * 100)}%
+                              </label>
+                              <input
+                                type="range"
+                                min={10}
+                                max={100}
+                                value={Math.round((a.opacity ?? 1) * 100)}
+                                onChange={(e) =>
+                                  updateAction(a.id, {
+                                    opacity: Number(e.target.value) / 100,
+                                  })
+                                }
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Campos específicos por tipo */}
+                          {a.kind === "custom" && (
+                            <div className="space-y-1">
+                              <label className={labelCls}>Link de destino</label>
+                              <input
+                                className={`${smallInputCls} font-mono-sm`}
+                                placeholder="https://..."
+                                value={a.url ?? ""}
+                                onChange={(e) =>
+                                  updateAction(a.id, { url: e.target.value })
+                                }
+                              />
+                            </div>
+                          )}
+
+                          {a.kind === "whatsapp" && (
+                            <div className="space-y-1">
+                              <label className={labelCls}>Número (com DDI)</label>
+                              <input
+                                className={`${smallInputCls} font-mono-sm`}
+                                placeholder="5511999999999"
+                                value={a.whatsapp ?? ""}
+                                onChange={(e) =>
+                                  updateAction(a.id, { whatsapp: e.target.value })
+                                }
+                              />
+                            </div>
+                          )}
+
+                          {a.kind === "product" && (
+                            <div className="space-y-1">
+                              <label className={labelCls}>Produto de destino</label>
+                              <select
+                                className={smallInputCls}
+                                value={a.productId ?? ""}
+                                onChange={(e) =>
+                                  updateAction(a.id, { productId: e.target.value })
+                                }
+                              >
+                                <option value="">Selecione...</option>
+                                {allProducts.map((p) => (
+                                  <option key={p.id} value={p.id}>
+                                    {p.name}
+                                  </option>
+                                ))}
+                              </select>
+                              {(() => {
+                                const ref = allProducts.find(
+                                  (p) => p.id === a.productId
+                                );
+                                if (!ref) return null;
+                                return (
+                                  <div className="mt-1 flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low p-2">
+                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-outline-variant bg-black">
+                                      {ref.photo_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                          src={ref.photo_url}
+                                          alt={ref.name}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      ) : (
+                                        <span className="material-symbols-outlined text-on-surface-variant/40">
+                                          image
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="min-w-0">
+                                      <div className="truncate font-label-md font-bold text-on-surface">
+                                        {ref.name}
+                                      </div>
+                                      {ref.summary && (
+                                        <div className="truncate text-[11px] text-on-surface-variant">
+                                          {ref.summary}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          )}
+
+                          {a.kind === "form" && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <label className={labelCls}>Campos do formulário</label>
+                                <button
+                                  onClick={() => addFormField(a.id)}
+                                  className="flex items-center gap-1 font-label-md text-primary hover:underline"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">
+                                    add
+                                  </span>
+                                  Campo
+                                </button>
+                              </div>
+                              {(a.fields ?? []).length === 0 && (
+                                <p className="text-[11px] text-on-surface-variant opacity-60">
+                                  Adicione os campos que o visitante deve preencher
+                                  (vira um lead).
+                                </p>
+                              )}
+                              {(a.fields ?? []).map((f, fi) => (
+                                <div
+                                  key={fi}
+                                  className="flex items-center gap-2 rounded-md border border-outline-variant bg-surface-container-low p-2"
+                                >
+                                  <select
+                                    className="rounded-md border border-outline-variant bg-surface-container-lowest px-2 py-1 text-[12px] text-on-surface outline-none focus:border-primary"
+                                    value={f.kind}
+                                    onChange={(e) =>
+                                      updateFormField(a.id, fi, {
+                                        kind: e.target.value as FieldKind,
+                                      })
+                                    }
+                                  >
+                                    {(Object.keys(FIELD_LABELS) as FieldKind[]).map(
+                                      (k) => (
+                                        <option key={k} value={k}>
+                                          {FIELD_LABELS[k]}
+                                        </option>
+                                      )
+                                    )}
+                                  </select>
+                                  <input
+                                    className={smallInputCls}
+                                    placeholder="Rótulo do campo"
+                                    value={f.label}
+                                    onChange={(e) =>
+                                      updateFormField(a.id, fi, {
+                                        label: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <label className="flex shrink-0 items-center gap-1 text-[11px] text-on-surface-variant">
+                                    <input
+                                      type="checkbox"
+                                      checked={f.required}
+                                      onChange={(e) =>
+                                        updateFormField(a.id, fi, {
+                                          required: e.target.checked,
+                                        })
+                                      }
+                                    />
+                                    Obrig.
+                                  </label>
+                                  <button
+                                    onClick={() => removeFormField(a.id, fi)}
+                                    className="shrink-0 text-on-surface-variant transition-colors hover:text-error"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">
+                                      delete
+                                    </span>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Coluna de prévia */}
+                        <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-black/80 p-4">
+                          <span className="font-label-md text-[10px] uppercase text-white/40">
+                            Prévia
+                          </span>
+                          <div
+                            className="relative flex w-full max-w-[260px] items-center gap-3 overflow-hidden rounded-full px-5 py-3 text-white shadow-lg"
+                            style={{ backgroundColor: "transparent" }}
+                          >
+                            <span
+                              aria-hidden
+                              className="absolute inset-0"
+                              style={{
+                                backgroundColor: a.color,
+                                opacity: a.opacity ?? 1,
+                              }}
+                            />
+                            <span className="relative z-10 flex items-center gap-3">
+                              {a.icon && (
+                                <OptionIcon
+                                  value={a.icon}
+                                  size={22}
+                                  className="shrink-0 text-2xl leading-none"
+                                />
+                              )}
+                              <span className="min-w-0 text-left">
+                                <span className="block truncate font-bold leading-tight">
+                                  {a.label || "Botão"}
+                                </span>
+                                {a.subtitle && (
+                                  <span className="block truncate text-sm leading-tight opacity-90">
+                                    {a.subtitle}
+                                  </span>
+                                )}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -578,110 +1032,218 @@ export default function ProductModal({
                   Nenhum vídeo ainda. Envie o vídeo principal e os destaques.
                 </p>
               ) : (
-                <div className="grid grid-cols-2 gap-md md:grid-cols-3 lg:grid-cols-4">
-                  {videos.map((v, i) => (
-                    <div
-                      key={i}
-                      className={`overflow-hidden rounded-xl border bg-surface-container-lowest ${
-                        v.is_main ? "border-2 border-primary" : "border-outline-variant"
-                      }`}
-                    >
-                      <div className="relative aspect-[9/16] bg-black">
-                        <video
-                          src={v.video_url}
-                          className="h-full w-full object-cover"
-                          muted
-                          playsInline
-                        />
-                        {v.is_main && (
-                          <span className="absolute left-2 top-2 rounded bg-primary px-2 py-1 text-[10px] font-bold uppercase text-on-primary">
-                            Principal
-                          </span>
-                        )}
-                        <button
-                          onClick={() =>
-                            setVideos((prev) => prev.filter((_, idx) => idx !== i))
-                          }
-                          className="absolute right-2 top-2 flex items-center justify-center rounded-full bg-black/40 p-1.5 text-white transition-colors hover:bg-error/60"
-                          title="Excluir"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">
-                            delete
-                          </span>
-                        </button>
-                      </div>
-                      <div className="space-y-2 p-3">
-                        <input
-                          className="w-full bg-transparent font-label-md text-on-surface outline-none"
-                          value={v.title}
-                          placeholder="Nome do destaque"
-                          onChange={(e) =>
-                            setVideos((prev) =>
-                              prev.map((row, idx) =>
-                                idx === i ? { ...row, title: e.target.value } : row
-                              )
-                            )
-                          }
-                        />
-                        <label className="flex cursor-pointer items-center gap-2">
-                          <input
-                            type="radio"
-                            name="main_video"
-                            checked={v.is_main}
-                            onChange={() =>
-                              setVideos((prev) =>
-                                prev.map((row, idx) => ({
-                                  ...row,
-                                  is_main: idx === i,
-                                }))
-                              )
-                            }
-                          />
-                          <span className="text-body-sm text-on-surface-variant">
-                            Vídeo Principal
-                          </span>
-                        </label>
-                        <label className="flex cursor-pointer items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={v.is_highlight}
-                            onChange={(e) =>
-                              setVideos((prev) =>
-                                prev.map((row, idx) =>
-                                  idx === i
-                                    ? { ...row, is_highlight: e.target.checked }
-                                    : row
+                <div className="grid grid-cols-1 gap-md md:grid-cols-2">
+                  {videos.map((v, i) => {
+                    const dur = Math.max(1, Math.round(videoDurations[i] ?? 30));
+                    return (
+                      <div
+                        key={i}
+                        className={`overflow-hidden rounded-xl border bg-surface-container-lowest ${
+                          v.is_main ? "border-2 border-primary" : "border-outline-variant"
+                        }`}
+                      >
+                        <div className="flex gap-3 p-3">
+                          <div className="relative aspect-[9/16] w-24 shrink-0 overflow-hidden rounded-lg bg-black">
+                            <video
+                              src={v.video_url}
+                              className="h-full w-full object-cover"
+                              muted
+                              playsInline
+                              onLoadedMetadata={(e) => {
+                                const d = e.currentTarget.duration;
+                                if (d && isFinite(d))
+                                  setVideoDurations((prev) => ({ ...prev, [i]: d }));
+                              }}
+                            />
+                            {v.is_main && (
+                              <span className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-bold uppercase text-on-primary">
+                                Principal
+                              </span>
+                            )}
+                            <button
+                              onClick={() =>
+                                setVideos((prev) => prev.filter((_, idx) => idx !== i))
+                              }
+                              className="absolute right-1 top-1 flex items-center justify-center rounded-full bg-black/40 p-1 text-white transition-colors hover:bg-error/60"
+                              title="Excluir"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">
+                                delete
+                              </span>
+                            </button>
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <input
+                              className="w-full bg-transparent font-label-md text-on-surface outline-none"
+                              value={v.title}
+                              placeholder="Nome do destaque"
+                              onChange={(e) =>
+                                setVideos((prev) =>
+                                  prev.map((row, idx) =>
+                                    idx === i ? { ...row, title: e.target.value } : row
+                                  )
                                 )
-                              )
-                            }
-                          />
-                          <span className="text-body-sm text-on-surface-variant">
-                            Mostrar como destaque
-                          </span>
-                        </label>
+                              }
+                            />
+                            <label className="flex cursor-pointer items-center gap-2 text-body-sm text-on-surface-variant">
+                              <input
+                                type="radio"
+                                name="main_video"
+                                checked={v.is_main}
+                                onChange={() =>
+                                  setVideos((prev) =>
+                                    prev.map((row, idx) => ({
+                                      ...row,
+                                      is_main: idx === i,
+                                    }))
+                                  )
+                                }
+                              />
+                              Vídeo Principal
+                            </label>
+                            <label className="flex cursor-pointer items-center gap-2 text-body-sm text-on-surface-variant">
+                              <input
+                                type="checkbox"
+                                checked={v.is_highlight}
+                                onChange={(e) =>
+                                  setVideos((prev) =>
+                                    prev.map((row, idx) =>
+                                      idx === i
+                                        ? { ...row, is_highlight: e.target.checked }
+                                        : row
+                                    )
+                                  )
+                                }
+                              />
+                              Mostrar como destaque
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Botões posicionados neste vídeo (timing por slider). */}
+                        {actions.length > 0 && (
+                          <div className="space-y-2 border-t border-outline-variant/30 bg-surface-container-low px-3 py-2">
+                            <div className="flex items-center justify-between">
+                              <p className="font-label-md text-[10px] uppercase text-on-surface-variant">
+                                Botões neste vídeo
+                              </p>
+                              <span className="text-[10px] text-on-surface-variant/60">
+                                {dur}s
+                              </span>
+                            </div>
+
+                            {/* Mini-timeline: segmentos coloridos de cada botão
+                                (0..duração). Mostra de relance onde cada um
+                                aparece e que não há sobreposição. */}
+                            {v.buttons.length > 0 && (
+                              <div className="relative h-2 w-full overflow-hidden rounded-full bg-surface-container-highest">
+                                {v.buttons.map((b) => {
+                                  const a = actions.find((x) => x.id === b.actionId);
+                                  if (!a) return null;
+                                  const left = (b.start / dur) * 100;
+                                  const width = ((b.end - b.start) / dur) * 100;
+                                  return (
+                                    <span
+                                      key={b.actionId}
+                                      className="absolute top-0 h-full rounded-full"
+                                      style={{
+                                        left: `${left}%`,
+                                        width: `${Math.max(width, 1)}%`,
+                                        backgroundColor: a.color,
+                                      }}
+                                      title={`${a.label}: ${b.start}s–${b.end}s`}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {actions.map((a) => {
+                              const pl = v.buttons.find((b) => b.actionId === a.id);
+                              return (
+                                <div key={a.id} className="space-y-1">
+                                  <label className="flex cursor-pointer items-center gap-2 text-[12px] text-on-surface">
+                                    <input
+                                      type="checkbox"
+                                      checked={!!pl}
+                                      onChange={() => togglePlacement(i, a.id, dur)}
+                                    />
+                                    <span
+                                      className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                                      style={{ backgroundColor: a.color }}
+                                    />
+                                    <span className="truncate">
+                                      {a.label || "Botão"}
+                                    </span>
+                                  </label>
+                                  {pl && (
+                                    <div className="grid grid-cols-2 gap-2 pl-6">
+                                      <label className="text-[11px] text-on-surface-variant">
+                                        Início: {pl.start}s
+                                        <input
+                                          type="range"
+                                          min={0}
+                                          max={dur}
+                                          value={pl.start}
+                                          onChange={(e) =>
+                                            setPlacementStart(
+                                              i,
+                                              a.id,
+                                              Number(e.target.value)
+                                            )
+                                          }
+                                          className="w-full"
+                                        />
+                                      </label>
+                                      <label className="text-[11px] text-on-surface-variant">
+                                        Fim: {pl.end}s
+                                        <input
+                                          type="range"
+                                          min={0}
+                                          max={dur}
+                                          value={pl.end}
+                                          onChange={(e) =>
+                                            setPlacementEnd(
+                                              i,
+                                              a.id,
+                                              Number(e.target.value),
+                                              dur
+                                            )
+                                          }
+                                          className="w-full"
+                                        />
+                                      </label>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
-
-              <div className="flex gap-3 border-t border-outline-variant/30 pt-4">
-                <button
-                  onClick={salvarVideos}
-                  disabled={saving || !!videoBusy}
-                  className="rounded-lg bg-primary px-8 py-2 font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
-                >
-                  {saving ? "Salvando..." : "Salvar Alterações"}
-                </button>
-                <button
-                  onClick={onClose}
-                  className="rounded-lg border border-outline-variant px-6 py-2 font-bold text-on-surface transition-colors hover:bg-surface-variant"
-                >
-                  Descartar
-                </button>
-              </div>
             </div>
           )}
+        </div>
+
+        {/* Rodapé único: salva TODAS as abas de uma vez. */}
+        <div className="flex gap-3 border-t border-outline-variant bg-surface-container-high px-lg py-3">
+          <button
+            onClick={salvar}
+            disabled={saving || !!videoBusy}
+            className="rounded-lg bg-primary px-8 py-2 font-bold text-on-primary transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+          >
+            {saving ? "Salvando..." : "Salvar"}
+          </button>
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-outline-variant px-6 py-2 font-bold text-on-surface transition-colors hover:bg-surface-variant"
+          >
+            Descartar
+          </button>
         </div>
       </div>
     </div>

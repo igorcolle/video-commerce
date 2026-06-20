@@ -31,7 +31,7 @@ export default function SpecsModal({ product, specs, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cabeçalho */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3">
           <h3 className="text-base font-bold text-gray-900">
             Especificações — {product.name}
           </h3>
@@ -57,8 +57,10 @@ export default function SpecsModal({ product, specs, onClose }: Props) {
           </button>
         </div>
 
-        {/* Conteúdo rolável: resumo no topo + tabela abaixo */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Conteúdo rolável: resumo no topo + tabela abaixo.
+            Usa max-h própria (não flex-1) para não colapsar a altura quando o
+            conteúdo é pequeno num card de altura automática. */}
+        <div className="max-h-[calc(85vh-3.5rem)] overflow-y-auto p-4">
           {product.specs_summary && (
             <p className="mb-4 whitespace-pre-line text-sm leading-relaxed text-gray-700">
               {product.specs_summary}

@@ -13,7 +13,7 @@ export const OPTION_COLUMNS =
 export const FIELD_COLUMNS = "id, step_id, kind, label, required, position";
 
 export const PRODUCT_COLUMNS =
-  "id, company_id, journey_id, category_id, name, photo_url, benefits, buy_link, whatsapp, tag, tag_color, summary, description, status, specs_enabled, specs_summary, buttons, position, highlights_reveal_seconds";
+  "id, company_id, journey_id, category_id, name, photo_url, benefits, buy_link, whatsapp, tag, tag_color, summary, description, status, specs_enabled, specs_summary, buttons, action_buttons, position, highlights_reveal_seconds";
 
 export const PRODUCT_CATEGORY_COLUMNS = "id, company_id, name, position";
 
@@ -21,6 +21,6 @@ export const PRODUCT_SPEC_COLUMNS =
   "id, product_id, attribute, value, position";
 
 export const PRODUCT_VIDEO_COLUMNS =
-  "id, product_id, title, video_url, thumb_url, is_main, is_highlight, position";
+  "id, product_id, title, video_url, thumb_url, is_main, is_highlight, position, buttons";
 
 export const STEP_PRODUCT_COLUMNS = "step_id, product_id, position";

@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 type DbLead = {
   id: string;
   journey_id: string | null;
+  product_id: string | null;
   name: string | null;
   email: string | null;
   whatsapp: string | null;
@@ -21,21 +22,25 @@ export default async function LeadsPage() {
   await ensureProfile();
   const supabase = await createServerAuthClient();
 
-  // Leads e jornadas (para o nome de origem). RLS já filtra por empresa.
-  const [{ data: leads }, { data: journeys }] = await Promise.all([
+  // Leads, jornadas e produtos (para o nome de origem). RLS já filtra por empresa.
+  const [{ data: leads }, { data: journeys }, { data: products }] = await Promise.all([
     supabase
       .from("leads")
       .select(
-        "id, journey_id, name, email, whatsapp, created_at, captured_at, captured_by_name"
+        "id, journey_id, product_id, name, email, whatsapp, created_at, captured_at, captured_by_name"
       )
       .order("created_at", { ascending: false })
       .returns<DbLead[]>(),
     supabase.from("journeys").select("id, name").returns<
       { id: string; name: string }[]
     >(),
+    supabase.from("products").select("id, name").returns<
+      { id: string; name: string }[]
+    >(),
   ]);
 
   const journeyName = new Map((journeys ?? []).map((j) => [j.id, j.name]));
+  const productName = new Map((products ?? []).map((p) => [p.id, p.name]));
 
   // Formata a data no servidor (evita divergência de locale na hidratação).
   const fmt = new Intl.DateTimeFormat("pt-BR", {
@@ -57,7 +62,10 @@ export default async function LeadsPage() {
     name: l.name || "—",
     email: l.email || "—",
     phone: l.whatsapp || "—",
-    origin: (l.journey_id && journeyName.get(l.journey_id)) || "—",
+    origin:
+      (l.journey_id && journeyName.get(l.journey_id)) ||
+      (l.product_id && productName.get(l.product_id)) ||
+      "—",
     dateLabel: fmt.format(new Date(l.created_at)),
     // "Capturado" = já foi para o histórico (tem captured_at).
     captured: Boolean(l.captured_at),

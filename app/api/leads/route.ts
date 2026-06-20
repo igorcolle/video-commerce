@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       journey_id,
+      product_id,
       session_id,
       answers,
       recommended_products,
@@ -32,15 +33,57 @@ export async function POST(request: Request) {
       whatsapp,
     } = body ?? {};
 
-    if (!journey_id || !session_id) {
+    // Lead pode vir de uma JORNADA (journey_id) ou do PLAYER DE PRODUTO
+    // (product_id). session_id é sempre obrigatório.
+    if (!session_id || (!journey_id && !product_id)) {
       return NextResponse.json(
-        { error: "journey_id e session_id são obrigatórios." },
+        { error: "session_id e (journey_id ou product_id) são obrigatórios." },
         { status: 400 }
       );
     }
 
     const supabase = createServerSupabase();
 
+    // --- Lead de PRODUTO (sem jornada): descobre a empresa pelo produto. ---
+    if (product_id && !journey_id) {
+      const { data: prod, error: pErr } = await supabase
+        .from("products")
+        .select("id, company_id")
+        .eq("id", product_id)
+        .single();
+
+      if (pErr || !prod || !prod.company_id) {
+        return NextResponse.json(
+          { error: "Produto não encontrado." },
+          { status: 404 }
+        );
+      }
+
+      const { data, error } = await supabase
+        .from("leads")
+        .upsert(
+          {
+            product_id,
+            company_id: prod.company_id,
+            session_id,
+            answers: answers ?? {},
+            cta_clicked: cta_clicked ?? null,
+            name: name ?? null,
+            email: email ?? null,
+            whatsapp: whatsapp ?? null,
+          },
+          { onConflict: "product_id,session_id" }
+        )
+        .select("id")
+        .single();
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      return NextResponse.json({ ok: true, lead_id: data.id });
+    }
+
+    // --- Lead de JORNADA (fluxo original). ---
     // Descobre a empresa dona da jornada (e confirma publicação).
     const { data: journey, error: jErr } = await supabase
       .from("journeys")

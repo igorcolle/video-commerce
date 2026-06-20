@@ -68,6 +68,25 @@ body {
   animation: soundGlow 1s ease-in-out infinite;
 }
 
+/* "Ploc": botão de ação surge em cena com um leve overshoot de escala. */
+@keyframes plocIn {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.ploc-in {
+  animation: plocIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* =====================================================================
    DESIGN SYSTEM DO ADMIN (inspirado na Attio)
    Tudo fica escopado em ".admin-theme" para NÃO afetar a landing nem o
@@ -414,4 +433,13 @@ body {
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background-color: rgba(120, 120, 120, 0.75);
+}
+
+/* Rolagem horizontal SEM barra visível (ex.: faixa de destaques com >4). */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

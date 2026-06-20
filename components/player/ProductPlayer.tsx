@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Product, ProductSpec, ProductVideo } from "@/lib/supabase";
+import type {
+  Product,
+  ProductSpec,
+  ProductVideo,
+  ProductVideoButton,
+} from "@/lib/supabase";
 import StoryVideo from "./StoryVideo";
 import SpecsModal from "./SpecsModal";
 import HighlightsBar, { type HighlightItem } from "./HighlightsBar";
 import HighlightViewer from "./HighlightViewer";
+import VideoActionButtons from "./VideoActionButtons";
+import ProductTag from "@/components/ui/ProductTag";
 
 // =====================================================================
 // ProductPlayer — player público de UM produto (formato 9:16 / 1080x1920),
@@ -19,6 +26,8 @@ type Props = {
   product: Product;
   specs: ProductSpec[];
   videoUrl: string | null;
+  // Botões de ação posicionados no VÍDEO PRINCIPAL (timing).
+  mainVideoButtons?: ProductVideoButton[];
   // Vídeos de destaque do produto (stories) — viram as bolinhas no topo.
   highlights: ProductVideo[];
 };
@@ -27,6 +36,7 @@ export default function ProductPlayer({
   product,
   specs,
   videoUrl,
+  mainVideoButtons = [],
   highlights,
 }: Props) {
   const [specsOpen, setSpecsOpen] = useState(false);
@@ -35,6 +45,8 @@ export default function ProductPlayer({
   // Barra de destaques minimizada pelo visitante (oculta as bolinhas).
   const [barCollapsed, setBarCollapsed] = useState(false);
 
+  const actions = product.action_buttons ?? [];
+
   // Monta as bolinhas de destaque a partir dos vídeos do produto.
   const highlightItems: HighlightItem[] = highlights.map((v) => ({
     id: v.id,
@@ -42,11 +54,19 @@ export default function ProductPlayer({
     title: v.title,
     videoUrl: v.video_url,
     photo: product.photo_url,
+    buttons: v.buttons ?? [],
   }));
+
+  // Regra (b): a faixa só existe quando há 2 destaques ou mais.
+  const hasBar = highlightItems.length >= 2;
 
   // Quantos segundos antes do fim do vídeo principal a barra deve aparecer.
   // 0 (ou ausente) = aparece desde o início.
   const revealSecs = product.highlights_reveal_seconds || 0;
+
+  // (f) Botões laterais ficam SEMPRE numa altura mais baixa e fixa — não se
+  // movem se a faixa estiver maximizada, minimizada ou ausente.
+  const controlsTop = "top-32";
 
   // Só oferece especificações quando ativadas E há resumo ou linhas (mesma regra
   // do ResultStep). Evita abrir um painel vazio.
@@ -59,32 +79,45 @@ export default function ProductPlayer({
         <StoryVideo
           src={videoUrl}
           fitToHeight
+          controlsTop={controlsTop}
           onSpecsClick={hasSpecs ? () => setSpecsOpen(true) : undefined}
           specsActive={specsOpen}
         >
-          {({ remaining }) => {
+          {({ remaining, current }) => {
             // Bolinhas sobre o vídeo (acima da camada de pausa, abaixo dos
             // controles do canto superior direito). A barra aparece desde o
             // início (revealSecs = 0) ou só quando faltarem N segundos.
             const barVisible = revealSecs <= 0 || remaining <= revealSecs;
-            if (highlightItems.length === 0 || !barVisible) return null;
             return (
-              <div className="absolute left-2 right-14 top-3 z-20">
-                <HighlightsBar
-                  items={highlightItems}
-                  onOpen={setOpenHighlight}
-                  collapsible
-                  collapsed={barCollapsed}
-                  onToggleCollapsed={() => setBarCollapsed((v) => !v)}
+              <>
+                {hasBar && barVisible && (
+                  <div className="absolute left-3 right-3 top-3 z-20">
+                    <HighlightsBar
+                      items={highlightItems}
+                      onOpen={setOpenHighlight}
+                      collapsible
+                      collapsed={barCollapsed}
+                      onToggleCollapsed={() => setBarCollapsed((v) => !v)}
+                    />
+                  </div>
+                )}
+
+                {/* Botões de ação posicionados no vídeo principal. */}
+                <VideoActionButtons
+                  actions={actions}
+                  placements={mainVideoButtons}
+                  current={current}
+                  productId={product.id}
+                  productName={product.name}
                 />
-              </div>
+              </>
             );
           }}
         </StoryVideo>
       ) : (
         // Sem vídeo: mostra a foto + nome + acesso às especificações.
         <div className="flex w-full max-w-[420px] flex-col items-center gap-4 p-6 text-center">
-          {highlightItems.length > 0 && (
+          {hasBar && (
             <HighlightsBar items={highlightItems} onOpen={setOpenHighlight} />
           )}
           {product.photo_url ? (
@@ -99,7 +132,10 @@ export default function ProductPlayer({
               <span className="material-symbols-outlined text-[64px]">image</span>
             </div>
           )}
-          <h1 className="text-xl font-bold text-white">{product.name}</h1>
+          <h1 className="flex items-center justify-center gap-2 text-xl font-bold text-white">
+            <ProductTag tag={product.tag} color={product.tag_color} />
+            <span>{product.name}</span>
+          </h1>
           {hasSpecs && (
             <button
               type="button"
@@ -118,6 +154,9 @@ export default function ProductPlayer({
         <HighlightViewer
           items={highlightItems}
           current={openHighlight}
+          actions={actions}
+          productId={product.id}
+          productName={product.name}
           onSelect={setOpenHighlight}
           onClose={() => setOpenHighlight(null)}
         />

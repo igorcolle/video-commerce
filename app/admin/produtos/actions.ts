@@ -117,11 +117,82 @@ export async function reorderProducts(orderedIds: string[]) {
   revalidatePath(PRODUCTS_PATH);
 }
 
-// Salva a aba "Dados do produto".
-export async function saveProductData(formData: FormData) {
+// Salva o produto INTEIRO de uma vez (todas as abas do modal): dados,
+// especificações, ações e vídeos. Isso evita perder o conteúdo das abas que
+// não estavam ativas ao clicar em "Salvar".
+export async function saveProduct(formData: FormData) {
   const id = String(formData.get("id"));
   const supabase = await createServerAuthClient();
-  const { error } = await supabase
+
+  // --- Aba "Ações": catálogo de botões de ação (JSON validado). ---
+  let actionButtons: unknown[] = [];
+  try {
+    const arr = JSON.parse(String(formData.get("action_buttons_json") || "[]"));
+    if (Array.isArray(arr)) actionButtons = arr;
+  } catch {
+    actionButtons = [];
+  }
+
+  // --- Aba "Especificações". ---
+  const enabled = String(formData.get("specs_enabled")) === "true";
+  const specsSummary = String(formData.get("specs_summary") || "").trim() || null;
+  let specRows: { attribute: string; value: string }[] = [];
+  try {
+    const arr = JSON.parse(String(formData.get("specs_json") || "[]"));
+    if (Array.isArray(arr)) {
+      specRows = arr
+        .map((r) => ({
+          attribute: String(r?.attribute || "").trim(),
+          value: String(r?.value || "").trim(),
+        }))
+        .filter((r) => r.attribute !== "");
+    }
+  } catch {
+    specRows = [];
+  }
+
+  // --- Aba "Vídeos" (+ timing da barra de destaques). ---
+  const revealSeconds = Math.max(
+    0,
+    Math.trunc(Number(formData.get("highlights_reveal_seconds")) || 0)
+  );
+  let videoRows: {
+    title: string;
+    video_url: string;
+    thumb_url: string;
+    is_main: boolean;
+    is_highlight: boolean;
+    buttons: unknown[];
+  }[] = [];
+  try {
+    const arr = JSON.parse(String(formData.get("videos_json") || "[]"));
+    if (Array.isArray(arr)) {
+      videoRows = arr
+        .map((v) => ({
+          title: String(v?.title || "").trim(),
+          video_url: String(v?.video_url || "").trim(),
+          thumb_url: String(v?.thumb_url || "").trim(),
+          is_main: Boolean(v?.is_main),
+          is_highlight: v?.is_highlight !== false,
+          buttons: Array.isArray(v?.buttons) ? v.buttons : [],
+        }))
+        .filter((v) => v.video_url !== "");
+    }
+  } catch {
+    videoRows = [];
+  }
+  // Garante no máximo 1 vídeo principal.
+  let mainSeen = false;
+  videoRows = videoRows.map((v) => {
+    if (v.is_main && !mainSeen) {
+      mainSeen = true;
+      return v;
+    }
+    return { ...v, is_main: false };
+  });
+
+  // 1) Atualiza a linha do produto (dados + flags de specs + reveal + ações).
+  const { error: upErr } = await supabase
     .from("products")
     .update({
       name: String(formData.get("name") || "").trim(),
@@ -133,46 +204,19 @@ export async function saveProductData(formData: FormData) {
       description: String(formData.get("description") || "").trim() || null,
       photo_url: String(formData.get("photo_url") || "").trim() || null,
       status: String(formData.get("status") || "draft"),
+      specs_enabled: enabled,
+      specs_summary: specsSummary,
+      highlights_reveal_seconds: revealSeconds,
+      action_buttons: actionButtons,
     })
     .eq("id", id);
-  if (error) throw new Error("Erro ao salvar produto: " + error.message);
-  revalidatePath(PRODUCTS_PATH);
-}
+  if (upErr) throw new Error("Erro ao salvar produto: " + upErr.message);
 
-// Salva a aba "Especificações" (resumo + tabela de atributos).
-export async function saveProductSpecs(formData: FormData) {
-  const id = String(formData.get("id"));
-  const enabled = String(formData.get("specs_enabled")) === "true";
-  const summary = String(formData.get("specs_summary") || "").trim() || null;
-
-  // Linhas: [{ attribute, value }]
-  let rows: { attribute: string; value: string }[] = [];
-  try {
-    const arr = JSON.parse(String(formData.get("specs_json") || "[]"));
-    if (Array.isArray(arr)) {
-      rows = arr
-        .map((r) => ({
-          attribute: String(r?.attribute || "").trim(),
-          value: String(r?.value || "").trim(),
-        }))
-        .filter((r) => r.attribute !== "");
-    }
-  } catch {
-    rows = [];
-  }
-
-  const supabase = await createServerAuthClient();
-  const { error: upErr } = await supabase
-    .from("products")
-    .update({ specs_enabled: enabled, specs_summary: summary })
-    .eq("id", id);
-  if (upErr) throw new Error("Erro ao salvar especificações: " + upErr.message);
-
-  // Substitui o conjunto de atributos.
+  // 2) Substitui as especificações.
   await supabase.from("product_specs").delete().eq("product_id", id);
-  if (rows.length > 0) {
+  if (specRows.length > 0) {
     const { error } = await supabase.from("product_specs").insert(
-      rows.map((r, i) => ({
+      specRows.map((r, i) => ({
         product_id: id,
         attribute: r.attribute,
         value: r.value || null,
@@ -181,67 +225,12 @@ export async function saveProductSpecs(formData: FormData) {
     );
     if (error) throw new Error("Erro ao salvar atributos: " + error.message);
   }
-  revalidatePath(PRODUCTS_PATH);
-}
 
-// Salva a aba "Vídeos" (também alimenta os destaques/stories do player).
-export async function saveProductVideos(formData: FormData) {
-  const id = String(formData.get("id"));
-
-  // Segundos antes do fim do vídeo principal para a barra de destaques aparecer.
-  const revealSeconds = Math.max(
-    0,
-    Math.trunc(Number(formData.get("highlights_reveal_seconds")) || 0)
-  );
-
-  let rows: {
-    title: string;
-    video_url: string;
-    thumb_url: string;
-    is_main: boolean;
-    is_highlight: boolean;
-  }[] = [];
-  try {
-    const arr = JSON.parse(String(formData.get("videos_json") || "[]"));
-    if (Array.isArray(arr)) {
-      rows = arr
-        .map((v) => ({
-          title: String(v?.title || "").trim(),
-          video_url: String(v?.video_url || "").trim(),
-          thumb_url: String(v?.thumb_url || "").trim(),
-          is_main: Boolean(v?.is_main),
-          is_highlight: v?.is_highlight !== false,
-        }))
-        .filter((v) => v.video_url !== "");
-    }
-  } catch {
-    rows = [];
-  }
-
-  // Garante no máximo 1 vídeo principal.
-  let mainSeen = false;
-  rows = rows.map((v) => {
-    if (v.is_main && !mainSeen) {
-      mainSeen = true;
-      return v;
-    }
-    return { ...v, is_main: false };
-  });
-
-  const supabase = await createServerAuthClient();
-
-  // Grava o timing de revelação da barra de destaques no produto.
-  const { error: revealErr } = await supabase
-    .from("products")
-    .update({ highlights_reveal_seconds: revealSeconds })
-    .eq("id", id);
-  if (revealErr)
-    throw new Error("Erro ao salvar timing dos destaques: " + revealErr.message);
-
+  // 3) Substitui os vídeos (com os botões posicionados em cada um).
   await supabase.from("product_videos").delete().eq("product_id", id);
-  if (rows.length > 0) {
+  if (videoRows.length > 0) {
     const { error } = await supabase.from("product_videos").insert(
-      rows.map((v, i) => ({
+      videoRows.map((v, i) => ({
         product_id: id,
         title: v.title || null,
         video_url: v.video_url,
@@ -249,10 +238,12 @@ export async function saveProductVideos(formData: FormData) {
         is_main: v.is_main,
         is_highlight: v.is_highlight,
         position: i + 1,
+        buttons: v.buttons,
       }))
     );
     if (error) throw new Error("Erro ao salvar vídeos: " + error.message);
   }
+
   revalidatePath(PRODUCTS_PATH);
 }
 
@@ -263,7 +254,7 @@ export async function duplicateProduct(formData: FormData) {
   const { data: src, error: readErr } = await supabase
     .from("products")
     .select(
-      "company_id, category_id, name, photo_url, benefits, buy_link, whatsapp, tag, tag_color, summary, description, status, specs_enabled, specs_summary, buttons, highlights_reveal_seconds"
+      "company_id, category_id, name, photo_url, benefits, buy_link, whatsapp, tag, tag_color, summary, description, status, specs_enabled, specs_summary, buttons, action_buttons, highlights_reveal_seconds"
     )
     .eq("id", id)
     .single();
@@ -285,7 +276,7 @@ export async function duplicateProduct(formData: FormData) {
     supabase.from("product_specs").select("attribute, value, position").eq("product_id", id),
     supabase
       .from("product_videos")
-      .select("title, video_url, thumb_url, is_main, is_highlight, position")
+      .select("title, video_url, thumb_url, is_main, is_highlight, position, buttons")
       .eq("product_id", id),
   ]);
   if (specs && specs.length > 0) {
